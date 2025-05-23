@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Warships x</string>
+    <string name="title_activity_main">Warships x</string>
+    <string name="package_name">com.cube1845.warshipsx</string>
+    <string name="custom_url_scheme">com.cube1845.warshipsx</string>
+</resources>
