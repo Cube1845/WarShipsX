@@ -1,0 +1,6 @@
+@WarShipsX.API_HostAddress = http://localhost:5034
+
+GET {{WarShipsX.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
