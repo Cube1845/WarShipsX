@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WarShipsX.Application.Common.Interfaces;
 using WarShipsX.Infrastructure.Auth.Config;
+using WarShipsX.Infrastructure.Auth.Services;
 using WarShipsX.Infrastructure.Persistence;
 
 namespace WarShipsX.Infrastructure;
@@ -20,6 +21,10 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IWsxDbContext, WsxDbContext>();
+
+        services.AddScoped<PasswordHashService>();
+        services.AddScoped<TokenService>();
+        services.AddScoped<TokenConfiguration>();
 
         services.Configure<TokenOptions>(configuration.GetSection(TokenOptions.Jwt));
 
