@@ -1,0 +1,28 @@
+<p-floatlabel variant="on" class="w-full">
+    @if (type() == 'password') {
+        <p-password
+            autocomplete="off"
+            [id]="id()"
+            class="w-full m-0"
+            [formControl]="form"
+            [toggleMask]="true"
+            [feedback]="false" 
+            styleClass="w-full"
+            inputStyleClass="w-full"
+        />
+    }
+    @else {
+        <input
+            [type]="type()"
+            pInputText
+            autocomplete="off"
+            [id]="id()"
+            class="w-full m-0"
+            [formControl]="form"
+        />
+    }
+
+  @if (!!label()) {
+    <label [for]="id()">{{ label() }}</label>
+  }
+</p-floatlabel>
