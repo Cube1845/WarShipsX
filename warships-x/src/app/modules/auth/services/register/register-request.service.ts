@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from '../../../common/models/api-service';
-import { AuthData } from '../../models/auth-data';
 import { Result } from '../../../common/models/result';
 
 @Injectable({
   providedIn: 'root',
 })
-export class LoginRequestService extends ApiService<AuthData | Result> {
+export class RegisterRequestService extends ApiService<Result> {
   constructor() {
-    super('POST', 'auth/login');
+    super('POST', 'auth/register');
   }
 }

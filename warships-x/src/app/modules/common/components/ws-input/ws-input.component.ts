@@ -1,4 +1,4 @@
-import { Component, forwardRef, input } from '@angular/core';
+import { Component, forwardRef, input, OnDestroy, OnInit } from '@angular/core';
 import {
   ControlValueAccessor,
   FormControl,
@@ -8,6 +8,7 @@ import {
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { PasswordModule } from 'primeng/password';
+import { Subscription } from 'rxjs';
 
 var inputId = 0;
 
@@ -29,14 +30,30 @@ var inputId = 0;
     },
   ],
 })
-export class WsInputComponent implements ControlValueAccessor {
-  onChange!: (value: any) => void;
+export class WsInputComponent
+  implements ControlValueAccessor, OnInit, OnDestroy
+{
+  onChange!: (value: string) => void;
 
   id = input(`ws-input-${++inputId}`);
   label = input<string | null>(null);
   type = input<'text' | 'password' | 'number'>('text');
 
   form = new FormControl<string | null>('');
+
+  private subscription?: Subscription;
+
+  ngOnInit() {
+    this.subscription = this.form.valueChanges.subscribe((value) => {
+      if (this.onChange) {
+        this.onChange(value || '');
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subscription!.unsubscribe();
+  }
 
   writeValue(obj: any): void {
     this.form.setValue(obj || '');
