@@ -1,0 +1,8 @@
+<div class="w-full h-full flex flex-column align-items-center justify-content-center gap-8">
+    <div class="flex flex-column justify-content-center align-items-center">
+        <h2 class="m-0 p-0 mb-2 text-3xl">{{ userInQueue ? 'You are waiting in queue' : 'Click to join the queue' }}</h2>
+        <h3 class="m-0 p-0 mb-5">Players waiting: {{ playersWaitingCount }}</h3>
+    </div>
+
+    <ws-button [label]="userInQueue ? 'Leave' : 'Join'" class="w-full" (click)="userInQueue ? leaveQueue() : joinQueue()" size="large"/>
+</div>

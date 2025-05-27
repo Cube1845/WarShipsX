@@ -1,0 +1,12 @@
+@import "../../../../responsive.scss";
+
+:host {
+    width: 95vw;
+    margin: auto;
+    height: 100%;
+    display: flex;
+
+    @include respond("md") {
+        width: 420px;
+    }
+}

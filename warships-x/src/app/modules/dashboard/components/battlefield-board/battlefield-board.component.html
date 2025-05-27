@@ -1,0 +1,17 @@
+<table>
+    @for (y of sizePurposeArray; track $index) {
+        <tr>
+            @for (x of sizePurposeArray; track $index) {
+                @if (x == 0 && y == 0) {
+                    <td></td>
+                } @else if (x > 0 && y == 0) {
+                    <td>{{ x }}</td>
+                } @else if (x == 0 && y > 0) {
+                    <td>{{ alphaChars[y - 1] }}</td>
+                } @else {
+                    <td class="border"></td>
+                }
+            }
+        </tr>
+    }
+</table>

@@ -1,0 +1,20 @@
+@import "../../../../responsive.scss";
+
+:host {
+    width: 95vw;
+    margin: auto;
+    height: 100%;
+    display: flex;
+
+    @include respond("md") {
+        width: 420px;
+    }
+
+    h2 {
+        color: var(--p-surface-700);
+    }
+
+    h3 {
+        color: var(--p-surface-600);
+    }
+}

@@ -1,0 +1,16 @@
+@import "../../../../responsive.scss";
+
+:host {
+  width: 100vw;
+  margin: auto;
+  height: 100%;
+  display: flex;
+
+  .header {
+    background-color: var(--p-primary-color);
+  }
+
+  h1 {
+    color: var(--p-surface-50);
+  }
+}
