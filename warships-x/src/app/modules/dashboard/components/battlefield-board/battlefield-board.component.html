@@ -1,17 +1,18 @@
-<table>
+<table [class]="smaller() ? 'smaller' : ''">
     @for (y of sizePurposeArray; track $index) {
         <tr>
             @for (x of sizePurposeArray; track $index) {
                 @if (x == 0 && y == 0) {
                     <td></td>
                 } @else if (x > 0 && y == 0) {
-                    <td>{{ x }}</td>
+                    <td>{{ alphaChars[x - 1]}}</td>
                 } @else if (x == 0 && y > 0) {
-                    <td>{{ alphaChars[y - 1] }}</td>
+                    <td>{{ y }}</td>
                 } @else {
-                    <td class="border"></td>
+                    <td [class]="'border ' + (hoverable() ? 'hoverable ' : ' ') + (selectedTileSignal() == alphaChars[x - 1] + y.toString() ? 'selected ' : ' ')" (click)="(hoverable() ? tileClick(alphaChars[x - 1], y) : null)"></td>
                 }
             }
         </tr>
     }
 </table>
+

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { WsButtonComponent } from '../../../common/components/ws-button/ws-button.component';
 
 @Component({
@@ -8,14 +8,14 @@ import { WsButtonComponent } from '../../../common/components/ws-button/ws-butto
   styleUrl: './game-start.component.scss',
 })
 export class GameStartComponent {
-  userInQueue: boolean = false;
-  playersWaitingCount: number = 0;
+  userInQueue = signal<boolean>(false);
+  playersWaitingCount = signal<number>(0);
 
   joinQueue(): void {
-    this.userInQueue = true;
+    this.userInQueue.set(true);
   }
 
   leaveQueue(): void {
-    this.userInQueue = false;
+    this.userInQueue.set(false);
   }
 }

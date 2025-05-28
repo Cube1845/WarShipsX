@@ -6,7 +6,23 @@
     height: 100%;
     display: flex;
 
-    @include respond("md") {
-        width: 420px;
+    .game-container {
+        flex-direction: column;
+
+        @include respond("md") {
+            flex-direction: row;
+        }
+    }
+
+    h1 {
+        color: var(--p-primary-color);
+    }
+
+    h2 {
+        color: var(--p-primary-600);
+    }
+
+    input {
+        width: 3rem;
     }
 }
