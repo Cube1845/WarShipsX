@@ -9,7 +9,7 @@
     .game-container {
         flex-direction: column;
 
-        @include respond("md") {
+        @include respond("lg") {
             flex-direction: row;
         }
     }

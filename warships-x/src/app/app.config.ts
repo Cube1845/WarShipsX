@@ -6,6 +6,7 @@ import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { WsxPreset } from './modules/wsx-preset';
+import { DialogService } from 'primeng/dynamicdialog';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,5 +22,6 @@ export const appConfig: ApplicationConfig = {
         },
       },
     }),
+    DialogService,
   ],
 };

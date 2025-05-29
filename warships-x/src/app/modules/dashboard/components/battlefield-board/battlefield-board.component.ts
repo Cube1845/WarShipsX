@@ -11,7 +11,6 @@ export class BattlefieldBoardComponent {
   alphaChars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
   hoverable = input<boolean>(false);
-  smaller = input<boolean>(false);
 
   onTileClick = output<string>();
 

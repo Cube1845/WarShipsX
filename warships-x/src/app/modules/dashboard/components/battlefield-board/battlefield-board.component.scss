@@ -1,9 +1,11 @@
 @import "../../../../responsive.scss";
 
 :host {
-    $tr-size-desktop: 3vw;
-    $tr-size-mobile: 6vw;
-    $tr-size-mobile-small: 6vw;
+    $tr-size-desktop: 3.3vw;
+    $tr-size-mobile-large: 4vw;
+    $tr-size-mobile-big: 4vw;
+    $tr-size-mobile: 3.5vw;
+    $tr-size-mobile-small: 5.2vw;
     $board-color: var(--p-surface-400);
 
     table {
@@ -39,14 +41,26 @@
                 }
             }
 
-            @include respond("sm") {
-                font-size: 1.2rem;
+            @include respond("xs") {
+                font-size: 0.8rem;
                 width: $tr-size-mobile;
                 height: $tr-size-mobile;
             }
 
             @include respond("md") {
-                font-size: 1.2rem;
+                font-size: 1rem;
+                width: $tr-size-mobile-big;
+                height: $tr-size-mobile-big;
+            }
+
+            @include respond("lg") {
+                font-size: 1.3rem;
+                width: $tr-size-mobile-large;
+                height: $tr-size-mobile-large;
+            }
+
+            @include respond("xl") {
+                font-size: 2rem;
                 width: $tr-size-desktop;
                 height: $tr-size-desktop;
             }
