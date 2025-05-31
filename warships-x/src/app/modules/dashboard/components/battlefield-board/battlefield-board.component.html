@@ -9,7 +9,10 @@
                 } @else if (x == 0 && y > 0) {
                     <td>{{ y }}</td>
                 } @else {
-                    <td [class]="'border ' + (hoverable() ? 'hoverable ' : ' ') + (selectedTileSignal() == alphaChars[x - 1] + y.toString() ? 'selected ' : ' ')" (click)="(hoverable() ? tileClick(alphaChars[x - 1], y) : null)"></td>
+                    <td [class]="(highlightedPositionInclude({letter: alphaChars[x - 1], number: y})() ? 'highlighted ' : ' ') +
+                        'border ' +
+                        tdBoardClass()" (click)="tileClick(alphaChars[x - 1], y)">
+                    </td>
                 }
             }
         </tr>

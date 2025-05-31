@@ -1,5 +1,38 @@
-<div class="w-full h-full flex flex-column align-items-center justify-content-center gap-8">
-    <div class="flex flex-column justify-content-center align-items-center">
+<div class="w-full flex justify-content-center align-items-center header">
+        <h1 class="m-0 p-0 py-2 text-3xl">WarShips X</h1>
+</div>
+<div class="w-full h-full flex flex-column align-items-center justify-content-center gap-4 container relative">
+    <h4 class="text-3xl m-0 p-0">Set up your battlefield</h4>
+    <div class="flex align-items-center justify-content-center gap-2 m-0 p-0">
+        <div class="flex flex-column m-0 p-0 justify-content-center align-items-center">
+            <h4 class="m-0 p-0 line-height-1 mb-2">x{{ fourShip().length > 0 ? 0 : 1 }}</h4>
+            <ws-button label="4" [outlined]="true" (click)="fourShipEdit()" />
+        </div>
+        <div class="flex flex-column m-0 p-0 justify-content-center align-items-center">
+            <h4 class="m-0 p-0 line-height-1 mb-2">x2</h4>
+            <ws-button label="3" [outlined]="true" />
+        </div>
+        <div class="flex flex-column m-0 p-0 justify-content-center align-items-center">
+            <h4 class="m-0 p-0 line-height-1 mb-2">x3</h4>
+            <ws-button label="2" [outlined]="true" />
+        </div>
+        <div class="flex flex-column m-0 p-0 justify-content-center align-items-center">
+            <h4 class="m-0 p-0 line-height-1 mb-2">x4</h4>
+            <ws-button label="1" [outlined]="true" />
+        </div>
+    </div>
+
+    <battlefield-board (onTileClick)="fieldClick($event)" [highlightedPositions]="fourShip()" />
+
+    @if (editState()) {
+        <div class="cancel-button-absolute z-3 absolute py-4 px-6 border-round-lg">
+            <div class="flex flex-column m-0 p-0 justify-content-end align-items-end h-full">
+                <ws-button label="Cancel" [outlined]="true" color="secondary" class="z-5" (click)="cancelEdit()"/>
+            </div>
+        </div>
+    }
+
+    <div class="flex flex-column justify-content-center align-items-center mt-3">
         <h2 class="m-0 p-0 mb-2 text-3xl">{{ userInQueue() ? 'You are waiting in queue' : 'Click to join the queue' }}</h2>
         <h3 class="m-0 p-0 mb-5">Players waiting: {{ playersWaitingCount() }}</h3>
     </div>
