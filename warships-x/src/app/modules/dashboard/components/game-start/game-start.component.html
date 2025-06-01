@@ -6,19 +6,19 @@
     <div class="flex align-items-center justify-content-center gap-2 m-0 p-0">
         <div class="flex flex-column m-0 p-0 justify-content-center align-items-center">
             <h4 class="m-0 p-0 line-height-1 mb-2">x{{ fourShip().length > 0 ? 0 : 1 }}</h4>
-            <ws-button label="4" [outlined]="true" (click)="fourShipEdit()" />
+            <ws-button label="4" [outlined]="true" (click)="shipEdit(4)" />
         </div>
         <div class="flex flex-column m-0 p-0 justify-content-center align-items-center">
-            <h4 class="m-0 p-0 line-height-1 mb-2">x2</h4>
-            <ws-button label="3" [outlined]="true" />
+            <h4 class="m-0 p-0 line-height-1 mb-2">x{{ threeShips().length > 0 ? 2 - threeShips().length : 2 }}</h4>
+            <ws-button label="3" [outlined]="true" (click)="shipEdit(3)" />
         </div>
         <div class="flex flex-column m-0 p-0 justify-content-center align-items-center">
-            <h4 class="m-0 p-0 line-height-1 mb-2">x3</h4>
-            <ws-button label="2" [outlined]="true" />
+            <h4 class="m-0 p-0 line-height-1 mb-2">x{{ twoShips().length > 0 ? 3 - twoShips().length : 3 }}</h4>
+            <ws-button label="2" [outlined]="true" (click)="shipEdit(2)" />
         </div>
         <div class="flex flex-column m-0 p-0 justify-content-center align-items-center">
-            <h4 class="m-0 p-0 line-height-1 mb-2">x4</h4>
-            <ws-button label="1" [outlined]="true" />
+            <h4 class="m-0 p-0 line-height-1 mb-2">x{{ oneShips().length > 0 ? 4 - oneShips().length : 4 }}</h4>
+            <ws-button label="1" [outlined]="true" (click)="shipEdit(1)" />
         </div>
     </div>
 

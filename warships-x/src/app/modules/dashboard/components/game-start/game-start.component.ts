@@ -21,27 +21,34 @@ export class GameStartComponent {
   editType: 4 | 3 | 2 | 1 | undefined;
 
   fourShip = signal<Position[]>(this.settingShipsService.fourShip);
+  threeShips = signal<Position[][]>(this.settingShipsService.threeShips);
+  twoShips = signal<Position[][]>(this.settingShipsService.twoShips);
+  oneShips = signal<Position[][]>(this.settingShipsService.oneShips);
 
-  fourShipEdit(): void {
-    this.editState.set(true);
-    this.editType = 4;
-  }
-
-  fourShipClick(pos: Position): void {
-    if (
-      this.settingShipsService.fourShip.some(
-        (x) => x.letter == pos.letter && x.number == pos.number
-      )
-    ) {
-      this.settingShipsService.fourShip.forEach((x, i) => {
-        if (x.letter == pos.letter && x.number == pos.number) {
-          this.settingShipsService.fourShip.splice(i);
-        }
-      });
+  shipEdit(shipSize: 4 | 3 | 2 | 1): void {
+    if (this.editState() && this.editType == shipSize) {
+      this.cancelEdit();
       return;
     }
 
-    this.settingShipsService.fourShip.push(pos);
+    this.editState.set(true);
+    this.editType = shipSize;
+  }
+
+  fourShipClick(pos: Position): void {
+    this.settingShipsService.addShipPosition(
+      pos,
+      this.settingShipsService.fourShip,
+      4
+    );
+  }
+
+  threeShipClick(pos: Position): void {
+    this.settingShipsService.modifyShips(
+      pos,
+      this.settingShipsService.threeShips,
+      3
+    );
   }
 
   fieldClick(pos: Position): void {
@@ -52,6 +59,9 @@ export class GameStartComponent {
     switch (this.editType) {
       case 4:
         this.fourShipClick(pos);
+        break;
+      case 3:
+        this.threeShipClick(pos);
         break;
       default:
         break;

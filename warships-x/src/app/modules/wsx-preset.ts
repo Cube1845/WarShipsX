@@ -1,7 +1,7 @@
 import Lara from '@primeng/themes/lara';
 import { definePreset } from '@primeng/themes';
 
-const primaryColor = 'teal';
+const primaryColor = 'emerald';
 const secondaryColor = 'zinc';
 
 export const WsxPreset = definePreset(Lara, {
