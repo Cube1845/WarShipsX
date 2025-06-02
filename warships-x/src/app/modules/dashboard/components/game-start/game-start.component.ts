@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { WsButtonComponent } from '../../../common/components/ws-button/ws-button.component';
 import { BattlefieldBoardComponent } from '../battlefield-board/battlefield-board.component';
 import { SettingShipsService } from '../../services/setting-ships.service';
@@ -13,6 +13,11 @@ import { Position } from '../../models/position';
 export class GameStartComponent {
   private readonly settingShipsService = inject(SettingShipsService);
 
+  readonly maxFourShips: number = 1;
+  readonly maxThreeShips: number = 2;
+  readonly maxTwoShips: number = 3;
+  readonly maxOneShips: number = 4;
+
   userInQueue = signal<boolean>(false);
   playersWaitingCount = signal<number>(0);
 
@@ -20,10 +25,32 @@ export class GameStartComponent {
 
   editType: 4 | 3 | 2 | 1 | undefined;
 
-  fourShip = signal<Position[]>(this.settingShipsService.fourShip);
-  threeShips = signal<Position[][]>(this.settingShipsService.threeShips);
-  twoShips = signal<Position[][]>(this.settingShipsService.twoShips);
-  oneShips = signal<Position[][]>(this.settingShipsService.oneShips);
+  allShips = computed(() => [
+    ...this.settingShipsService.fourShip,
+    ...this.settingShipsService.threeShips.flat(),
+    ...this.settingShipsService.twoShips.flat(),
+    ...this.settingShipsService.oneShips.flat(),
+  ]);
+
+  fourShipCount = computed(() =>
+    this.settingShipsService.fourShip.length > 0 ? 1 : 0
+  );
+
+  threeShipsCount = computed(
+    () =>
+      this.settingShipsService.threeShips.filter((x) => x && x.length > 0)
+        .length
+  );
+
+  twoShipsCount = computed(
+    () =>
+      this.settingShipsService.twoShips.filter((x) => x && x.length > 0).length
+  );
+
+  oneShipsCount = computed(
+    () =>
+      this.settingShipsService.oneShips.filter((x) => x && x.length > 0).length
+  );
 
   shipEdit(shipSize: 4 | 3 | 2 | 1): void {
     if (this.editState() && this.editType == shipSize) {
@@ -33,10 +60,11 @@ export class GameStartComponent {
 
     this.editState.set(true);
     this.editType = shipSize;
+    this.settingShipsService.setForbiddenFields([]);
   }
 
   fourShipClick(pos: Position): void {
-    this.settingShipsService.addShipPosition(
+    this.settingShipsService.modifyShipPosition(
       pos,
       this.settingShipsService.fourShip,
       4
@@ -69,8 +97,21 @@ export class GameStartComponent {
   }
 
   cancelEdit(): void {
+    switch (this.editType) {
+      case 4:
+        if (this.settingShipsService.fourShip.length != 4) {
+          this.settingShipsService.fourShip.splice(0, 4);
+        }
+        break;
+      case 3:
+        break;
+      default:
+        break;
+    }
+
     this.editState.set(false);
     this.editType = undefined;
+    this.settingShipsService.forbiddenFields.splice(0, 100);
   }
 
   joinQueue(): void {
