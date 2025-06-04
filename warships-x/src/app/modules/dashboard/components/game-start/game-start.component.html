@@ -25,8 +25,10 @@
     <battlefield-board (onTileClick)="fieldClick($event)" [highlightedPositions]="allShips()" />
 
     @if (editState()) {
-        <div class="cancel-button-absolute z-3 absolute py-4 px-6 border-round-lg">
-            <div class="flex flex-column m-0 p-0 justify-content-end align-items-end h-full">
+        <div class="cancel-button-absolute z-3 absolute py-4 px-5 border-round-lg">
+            <div class="flex flex-column m-0 p-0 justify-content-center align-items-center h-full">
+                <h4 class="m-0 p-0 line-height-1 mb-3">Editing: {{ this.editType }}</h4>
+
                 <ws-button label="Cancel" [outlined]="true" color="secondary" class="z-5" (click)="cancelEdit()"/>
             </div>
         </div>

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { Position } from '../models/position';
 
 @Injectable({
@@ -7,128 +7,156 @@ import { Position } from '../models/position';
 export class SettingShipsService {
   private readonly letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
-  readonly fourShip: Position[] = [];
-  readonly threeShips: Position[][] = [[], []];
-  readonly twoShips: Position[][] = [[], [], []];
-  readonly oneShips: Position[][] = [[], [], [], []];
-
-  readonly forbiddenFields: Position[] = [];
+  readonly fourShip = signal<Position[]>([]);
+  readonly threeShips = signal<WritableSignal<Position[]>[]>([
+    signal<Position[]>([]),
+    signal<Position[]>([]),
+  ]);
+  readonly twoShips = signal<WritableSignal<Position[]>[]>([
+    signal<Position[]>([]),
+    signal<Position[]>([]),
+    signal<Position[]>([]),
+  ]);
+  readonly oneShips = signal<WritableSignal<Position[]>[]>([
+    signal<Position[]>([]),
+    signal<Position[]>([]),
+    signal<Position[]>([]),
+    signal<Position[]>([]),
+  ]);
 
   flattenAllShipPositions(): Position[] {
     const fields: Position[] = [];
 
-    this.fourShip.forEach((x) => fields.push(x));
-    this.threeShips.forEach((x) => x.forEach((n) => fields.push(n)));
-    this.twoShips.forEach((x) => x.forEach((n) => fields.push(n)));
-    this.oneShips.forEach((x) => x.forEach((n) => fields.push(n)));
+    this.fourShip().forEach((x) => fields.push(x));
+    this.threeShips().forEach((x) => x().forEach((n) => fields.push(n)));
+    this.twoShips().forEach((x) => x().forEach((n) => fields.push(n)));
+    this.oneShips().forEach((x) => x().forEach((n) => fields.push(n)));
 
     return fields;
   }
 
-  setForbiddenFields(notIncludedPositions: Position[]): void {
+  getForbiddenFields(notIncludedPositions: Position[]): Position[] {
+    const forbiddenFields: Position[] = [];
+
     const flattenedFilteredShipPositions =
       this.flattenAllShipPositions().filter(
-        (x) => !notIncludedPositions.includes(x)
+        (pos) =>
+          !notIncludedPositions.some(
+            (p) => p.letter === pos.letter && p.number === pos.number
+          )
       );
 
     const fieldNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const maxLetterIndex = this.letters.length - 1;
 
-    fieldNumbers.forEach((n) =>
-      this.letters.forEach((a) => {
-        const hasShipNearby = flattenedFilteredShipPositions.some(
-          (x) =>
-            (n - 1 == x.number && a == x.letter) ||
-            (this.letters.indexOf(a) < 9 &&
-              n - 1 == x.number &&
-              a == this.letters[this.letters.indexOf(a) + 1]) ||
-            (this.letters.indexOf(a) < 9 &&
-              n == x.number &&
-              a == this.letters[this.letters.indexOf(a) + 1]) ||
-            (this.letters.indexOf(a) < 9 &&
-              n + 1 == x.number &&
-              a == this.letters[this.letters.indexOf(a) + 1]) ||
-            (n + 1 == x.number && a == x.letter) ||
-            (this.letters.indexOf(a) > 0 &&
-              n + 1 == x.number &&
-              a == this.letters[this.letters.indexOf(a) - 1]) ||
-            (this.letters.indexOf(a) > 0 &&
-              n == x.number &&
-              a == this.letters[this.letters.indexOf(a) - 1]) ||
-            (this.letters.indexOf(a) > 0 &&
-              n - 1 == x.number &&
-              a == this.letters[this.letters.indexOf(a) - 1]) ||
-            (n == x.number && a == x.letter)
-        );
+    for (const number of fieldNumbers) {
+      for (let letterIndex = 0; letterIndex <= maxLetterIndex; letterIndex++) {
+        const letter = this.letters[letterIndex];
+
+        const prevLetter =
+          letterIndex > 0 ? this.letters[letterIndex - 1] : null;
+        const nextLetter =
+          letterIndex < maxLetterIndex ? this.letters[letterIndex + 1] : null;
+
+        const hasShipNearby = flattenedFilteredShipPositions.some((pos) => {
+          const sameLetter = pos.letter === letter;
+          const prevLetterMatch =
+            prevLetter !== null && pos.letter === prevLetter;
+          const nextLetterMatch =
+            nextLetter !== null && pos.letter === nextLetter;
+
+          const num = pos.number;
+
+          return (
+            (num === number && sameLetter) ||
+            (num === number && (prevLetterMatch || nextLetterMatch)) ||
+            ((num === number - 1 || num === number + 1) &&
+              (sameLetter || prevLetterMatch || nextLetterMatch))
+          );
+        });
 
         if (hasShipNearby) {
-          this.forbiddenFields.push({ letter: a, number: n });
+          forbiddenFields.push({ letter, number });
         }
-      })
-    );
+      }
+    }
+
+    return forbiddenFields;
   }
 
-  modifyShips(pos: Position, ships: Position[][], shipSize: 3 | 2 | 1): void {
+  modifyShips(
+    pos: Position,
+    ships: WritableSignal<WritableSignal<Position[]>[]>,
+    shipSize: 3 | 2 | 1
+  ): void {
     var editedShipIndex: number | undefined;
 
-    ships.forEach((x, i) => {
-      if (x.includes(pos)) {
+    ships().forEach((x, i) => {
+      if (
+        (x().length > 0 && x().length < shipSize) ||
+        x().some((s) => s.letter == pos.letter && s.number == pos.number)
+      ) {
         editedShipIndex = i;
       }
     });
 
-    if (!editedShipIndex) {
+    if (editedShipIndex === undefined) {
       var firstEmptyShipIndex: number | undefined;
       var indexFound = false;
 
-      ships.forEach((x, i) => {
-        if (x && x.length == 0 && !indexFound) {
+      ships().forEach((x, i) => {
+        if (x() && x().length == 0 && !indexFound) {
           indexFound = true;
           firstEmptyShipIndex = i;
         }
       });
 
       if (firstEmptyShipIndex !== undefined) {
-        this.modifyShipPosition(pos, ships[firstEmptyShipIndex], shipSize);
+        this.modifyShipPosition(pos, ships()[firstEmptyShipIndex], shipSize);
       }
 
       return;
     }
 
-    this.modifyShipPosition(pos, ships[editedShipIndex], shipSize);
+    this.modifyShipPosition(pos, ships()[editedShipIndex], shipSize);
   }
 
   modifyShipPosition(
     pos: Position,
-    ship: Position[],
+    ship: WritableSignal<Position[]>,
     shipSize: 4 | 3 | 2 | 1
   ): void {
-    if (ship.some((x) => x.letter == pos.letter && x.number == pos.number)) {
+    const forbiddenFields = this.getForbiddenFields(ship());
+
+    if (ship().some((x) => x.letter == pos.letter && x.number == pos.number)) {
       this.removeShipField(pos, ship);
-      this.setForbiddenFields(ship);
       return;
     }
 
-    if (this.fourShip.length >= shipSize) {
+    if (ship().length >= shipSize) {
       return;
     }
 
-    const newPositions = this.cloneArray(ship);
+    if (
+      forbiddenFields.some(
+        (f) => f.letter == pos.letter && f.number == pos.number
+      )
+    ) {
+      return;
+    }
+
+    const newPositions = this.cloneArray(ship());
     newPositions.push(pos);
 
     if (!this.isShipContinuous(newPositions)) {
       return;
     }
 
-    if (this.forbiddenFields.includes(pos)) {
-      return;
-    }
-
-    ship.push(pos);
-    this.setForbiddenFields(ship);
+    this.modifySignalArray(ship, (s) => s.push(pos));
   }
 
-  removeShipField(pos: Position, ship: Position[]): void {
-    const clonedShip = ship.filter(
+  removeShipField(pos: Position, ship: WritableSignal<Position[]>): void {
+    const clonedShip = ship().filter(
       (x) => !(x.letter == pos.letter && x.number == pos.number)
     );
 
@@ -136,9 +164,9 @@ export class SettingShipsService {
       return;
     }
 
-    ship.forEach((x, i) => {
+    ship().forEach((x, i) => {
       if (x.letter == pos.letter && x.number == pos.number) {
-        this.fourShip.splice(i, 1);
+        this.modifySignalArray(ship, (s) => s.splice(i, 1));
       }
     });
   }
@@ -199,5 +227,16 @@ export class SettingShipsService {
     });
 
     return newArray;
+  }
+
+  modifySignalArray(
+    signalArray: WritableSignal<Position[]>,
+    modifyFn: (array: Position[]) => void
+  ): void {
+    const array = [...signalArray()];
+
+    modifyFn(array);
+
+    signalArray.set(array);
   }
 }
