@@ -24,6 +24,64 @@ export class SettingShipsService {
     signal<Position[]>([]),
   ]);
 
+  clearShips(): void {
+    this.fourShip.set([]);
+
+    this.threeShips.set([signal<Position[]>([]), signal<Position[]>([])]);
+
+    this.twoShips.set([
+      signal<Position[]>([]),
+      signal<Position[]>([]),
+      signal<Position[]>([]),
+    ]);
+
+    this.oneShips.set([
+      signal<Position[]>([]),
+      signal<Position[]>([]),
+      signal<Position[]>([]),
+      signal<Position[]>([]),
+    ]);
+  }
+
+  areAllShipsSet(): boolean {
+    const fourShipSet = this.fourShip().length == 4;
+    const threeShipsSet =
+      this.threeShips().length == 2 &&
+      this.threeShips().every((x) => x().length == 3);
+    const twoShipsSet =
+      this.twoShips().length == 3 &&
+      this.twoShips().every((x) => x().length == 2);
+    const oneShipsSet =
+      this.oneShips().length == 4 &&
+      this.oneShips().every((x) => x().length == 1);
+
+    return fourShipSet && threeShipsSet && twoShipsSet && oneShipsSet;
+  }
+
+  clearIncorrectShips(): void {
+    if (this.fourShip().length != 4) {
+      this.modifySignalArray(this.fourShip, (s) => (s.length = 0));
+    }
+
+    this.threeShips().forEach((x) => {
+      if (x().length != 3) {
+        this.modifySignalArray(x, (s) => (s.length = 0));
+      }
+    });
+
+    this.twoShips().forEach((x) => {
+      if (x().length != 2) {
+        this.modifySignalArray(x, (s) => (s.length = 0));
+      }
+    });
+
+    this.oneShips().forEach((x) => {
+      if (x().length != 1) {
+        this.modifySignalArray(x, (s) => (s.length = 0));
+      }
+    });
+  }
+
   flattenAllShipPositions(): Position[] {
     const fields: Position[] = [];
 

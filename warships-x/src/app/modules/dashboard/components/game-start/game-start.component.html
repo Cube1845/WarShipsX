@@ -20,6 +20,9 @@
             <h4 class="m-0 p-0 line-height-1 mb-2">x{{ maxOneShips - oneShipsCount() }}</h4>
             <ws-button label="1" [outlined]="true" (click)="shipEdit(1)" />
         </div>
+        <div class="flex flex-column m-0 p-0 justify-content-end align-items-end h-full">
+            <ws-button label="Clear" [outlined]="true" (click)="clearShips()" color="secondary"/>
+        </div>
     </div>
 
     <battlefield-board (onTileClick)="fieldClick($event)" [highlightedPositions]="allShips()" />

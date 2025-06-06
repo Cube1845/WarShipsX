@@ -3,6 +3,7 @@ import { WsButtonComponent } from '../../../common/components/ws-button/ws-butto
 import { BattlefieldBoardComponent } from '../battlefield-board/battlefield-board.component';
 import { SettingShipsService } from '../../services/setting-ships.service';
 import { Position } from '../../models/position';
+import { ToastService } from '../../../common/services/toast.service';
 
 @Component({
   selector: 'app-game-start',
@@ -12,6 +13,7 @@ import { Position } from '../../models/position';
 })
 export class GameStartComponent {
   private readonly settingShipsService = inject(SettingShipsService);
+  private readonly toastService = inject(ToastService);
 
   readonly maxFourShips: number = 1;
   readonly maxThreeShips: number = 2;
@@ -60,10 +62,24 @@ export class GameStartComponent {
         .length
   );
 
+  clearShips(): void {
+    if (this.userInQueue()) {
+      return;
+    }
+
+    this.settingShipsService.clearShips();
+  }
+
   shipEdit(shipSize: 4 | 3 | 2 | 1): void {
+    if (this.userInQueue()) {
+      return;
+    }
+
     if (this.editState()) {
-      if (this.editType == shipSize) {
-        this.cancelEdit();
+      const currentEditType = this.editType;
+      this.cancelEdit();
+
+      if (currentEditType == shipSize) {
         return;
       }
     }
@@ -112,54 +128,18 @@ export class GameStartComponent {
   }
 
   cancelEdit(): void {
-    switch (this.editType) {
-      case 4:
-        if (this.settingShipsService.fourShip().length != 4) {
-          this.settingShipsService.modifySignalArray(
-            this.settingShipsService.fourShip,
-            (s) => (s.length = 0)
-          );
-        }
-        break;
-      case 3:
-        this.settingShipsService.threeShips().forEach((x) => {
-          if (x().length != 3) {
-            this.settingShipsService.modifySignalArray(
-              x,
-              (s) => (s.length = 0)
-            );
-          }
-        });
-        break;
-      case 2:
-        this.settingShipsService.twoShips().forEach((x) => {
-          if (x().length != 2) {
-            this.settingShipsService.modifySignalArray(
-              x,
-              (s) => (s.length = 0)
-            );
-          }
-        });
-        break;
-      case 1:
-        this.settingShipsService.oneShips().forEach((x) => {
-          if (x().length != 1) {
-            this.settingShipsService.modifySignalArray(
-              x,
-              (s) => (s.length = 0)
-            );
-          }
-        });
-        break;
-      default:
-        break;
-    }
+    this.settingShipsService.clearIncorrectShips();
 
     this.editState.set(false);
     this.editType = undefined;
   }
 
   joinQueue(): void {
+    if (!this.settingShipsService.areAllShipsSet()) {
+      this.toastService.error('You have to set your ships first');
+      return;
+    }
+
     this.userInQueue.set(true);
   }
 

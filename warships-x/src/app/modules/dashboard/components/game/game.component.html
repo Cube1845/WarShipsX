@@ -2,12 +2,12 @@
     <div class="w-full h-full flex justify-content-center game-container gap-5">
         <div class="flex flex-column align-items-center justify-content-center m-0 p-0">
             <h1 class="m-0 p-0 line-height-1 mb-2 text-3xl">You</h1>
-            <battlefield-board #userBoard />
+            <battlefield-board />
         </div>
 
         <div class="flex flex-column align-items-center justify-content-center m-0 p-0">
             <h1 class="m-0 p-0 line-height-1 mb-2 text-3xl">Opponent</h1>
-            <battlefield-board #opponentBoard />
+            <battlefield-board (onTileClick)="fieldClicked($event)" />
         </div>
     </div>
 </div>
