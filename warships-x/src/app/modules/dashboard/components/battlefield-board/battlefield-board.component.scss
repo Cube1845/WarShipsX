@@ -23,9 +23,23 @@
             height: $tr-size-mobile-small;
             text-align: center;
 
+            transition: .2s background-color;
+
             &.border {
                 border: 1px solid $board-color;
                 background-color: var(--p-surface-800);
+            }
+
+            &.hoverable:hover {
+                background-color: var(--p-surface-700);
+            }
+
+            &.selected {
+                background-color: var(--p-surface-600);
+            }
+
+            &.secondly-highlighted {
+                background-color: var(--p-primary-900) !important;
             }
 
             @include respond("sm") {

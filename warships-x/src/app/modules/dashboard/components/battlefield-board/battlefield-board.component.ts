@@ -13,15 +13,35 @@ export class BattlefieldBoardComponent {
 
   onTileClick = output<Position>();
 
-  tdBoardClass = input<string>('');
+  hoverable = input<boolean>(false);
 
   highlightedPositions = input<Position[]>([]);
+  secondlyHighlightedPositions = input<Position[]>([]);
+
+  selectedPosition = input<Position>();
 
   highlightedPositionInclude(pos: Position) {
     return computed(() =>
       this.highlightedPositions().some(
         (x) => x.letter == pos.letter && x.number == pos.number
       )
+    );
+  }
+
+  secondlyHighlightedPositionInclude(pos: Position) {
+    return computed(() =>
+      this.secondlyHighlightedPositions().some(
+        (x) => x.letter == pos.letter && x.number == pos.number
+      )
+    );
+  }
+
+  isSelectedPosition(pos: Position) {
+    return computed(
+      () =>
+        this.selectedPosition() != undefined &&
+        this.selectedPosition()!.letter == pos.letter &&
+        this.selectedPosition()!.number == pos.number
     );
   }
 

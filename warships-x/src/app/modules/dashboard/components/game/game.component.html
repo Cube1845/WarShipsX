@@ -1,13 +1,20 @@
-<div class="w-full h-full flex align-items-center justify-content-center">
-    <div class="w-full h-full flex justify-content-center game-container gap-5">
-        <div class="flex flex-column align-items-center justify-content-center m-0 p-0">
-            <h1 class="m-0 p-0 line-height-1 mb-2 text-3xl">You</h1>
-            <battlefield-board />
-        </div>
+<div [class]="'w-full flex justify-content-center align-items-center '  + (userTurn() ? ' user-turn ' : ' opponent-turn ')" >
+    <h3 class="m-0 p-0 py-2 text-3xl">{{ userTurn() ? 'Your turn' : `Opponent's turn` }}</h3>
+</div>
+<div class="w-full h-full flex justify-content-center game-container gap-5">
+    <div class="flex flex-column align-items-center justify-content-center m-0 p-0">
+        <h1 class="m-0 p-0 line-height-1 mb-2 text-3xl">You</h1>
+        <battlefield-board />
+    </div>
 
-        <div class="flex flex-column align-items-center justify-content-center m-0 p-0">
-            <h1 class="m-0 p-0 line-height-1 mb-2 text-3xl">Opponent</h1>
-            <battlefield-board (onTileClick)="fieldClicked($event)" />
-        </div>
+    <div class="flex flex-column align-items-center justify-content-center m-0 p-0">
+        <h1 class="m-0 p-0 line-height-1 mb-2 text-3xl">Opponent</h1>
+        <battlefield-board
+            (onTileClick)="fieldClicked($event)"
+            [hoverable]="true"
+            [selectedPosition]="currentSelectedTile()"
+            [highlightedPositions]="shotPositions()"
+            [secondlyHighlightedPositions]="missedPositions()"
+        />
     </div>
 </div>

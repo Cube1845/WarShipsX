@@ -1,8 +1,8 @@
 <div class="flex align-items-center justify-content-center flex-column m-0 p-0">
     <div class="flex align-items-center justify-content-center m-0 p-0 gap-3 mb-3" [formGroup]="fieldFormGroup">
-        <input pInputText class="w-2" formControlName="letter" placeholder="A" maxlength="1"/>
-        <input pInputText class="w-2" formControlName="number" placeholder="1" maxlength="2"/>
+        <input pInputText class="w-2" formControlName="letter" placeholder="A" maxlength="1" readonly />
+        <input pInputText class="w-2" formControlName="number" placeholder="1" maxlength="2" readonly />
     </div>
 
-    <ws-button label="Shoot" [disabled]="fieldFormGroup.invalid"/>
+    <ws-button label="Shoot" [disabled]="fieldFormGroup.invalid" (click)="shoot()"/>
 </div>
