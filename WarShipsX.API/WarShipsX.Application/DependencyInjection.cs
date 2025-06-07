@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using WarShipsX.Application.Common;
+using WarShipsX.Application.Hubs.Lobby;
+using WarShipsX.Application.Hubs.Models;
 
 namespace WarShipsX.Application;
 
@@ -10,6 +13,10 @@ public static class DependencyInjection
     {
         services.AddExceptionHandler<ExceptionHandler>();
         services.AddProblemDetails();
+
+        services.AddSignalR();
+
+        services.AddSingleton<IUserIdProvider, UserIdProvider>();
     }
 
     public static void UseApplicationDI(this WebApplication app)
