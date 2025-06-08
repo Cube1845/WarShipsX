@@ -17,6 +17,8 @@ public static class DependencyInjection
         services.AddSignalR();
 
         services.AddSingleton<IUserIdProvider, UserIdProvider>();
+
+        services.AddSingleton<LobbySingleton>();
     }
 
     public static void UseApplicationDI(this WebApplication app)

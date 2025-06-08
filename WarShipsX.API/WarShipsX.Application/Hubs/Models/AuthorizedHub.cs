@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
+using WarShipsX.Application.Common.Models;
 
 namespace WarShipsX.Application.Hubs.Models;
 
@@ -16,7 +17,7 @@ public abstract class AuthorizedHub : Hub
         }
         else
         {
-            Console.WriteLine("Unauthenticated connection.");
+            throw new WsxException("Unauthenticated connection");
         }
 
         await base.OnConnectedAsync();
