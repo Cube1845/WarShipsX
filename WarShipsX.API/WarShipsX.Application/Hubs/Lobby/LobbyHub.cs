@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using WarShipsX.Application.Hubs.Lobby.Models;
 using WarShipsX.Application.Hubs.Models;
 
 namespace WarShipsX.Application.Hubs.Lobby;
@@ -7,30 +8,23 @@ public class LobbyHub(LobbySingleton lobby) : AuthorizedHub
 {
     private readonly LobbySingleton _lobby = lobby;
 
-    public override async Task OnConnectedAsync()
+    public override Task OnConnectedAsync()
     {
-        await base.OnConnectedAsync();
+        return base.OnConnectedAsync();
+    }
 
-        _lobby.ConnectUser(GetUserId());
+    public Task ConnectPlayer(List<List<PositionDto>> ships)
+    {
+        _lobby.ConnectPlayer(new(Guid.Parse(GetUserId()), ships));
 
-        if (_lobby.GetConnectedUsersCount() >= 2)
-        {
-
-        }
-
-        return;
+        return Task.CompletedTask;
     }
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
-        _lobby.DisconnectUser(GetUserId());
+        _lobby.DisconnectPlayer(GetUserId());
 
         return base.OnDisconnectedAsync(exception);
-    }
-
-    public async Task SendMessage(string user, string message)
-    {
-        await Clients.User(GetUserId()).SendAsync("ReceiveMessage", user, message);
     }
 
     private string GetUserId()

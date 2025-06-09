@@ -8,7 +8,7 @@ public interface IWsxDbContext
 {
     Task<int> SaveChangesAsync(CancellationToken ct);
     DbSet<Game> Games { get; set; }
-    DbSet<Ship> Ship { get; set; }
-    DbSet<Position> Position { get; set; }
+    DbSet<Ship> Ships { get; set; }
+    DbSet<Position> Positions { get; set; }
     DbSet<Shot> Shots { get; set; }
 }

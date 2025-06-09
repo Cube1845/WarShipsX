@@ -12,8 +12,8 @@ public class WsxDbContext(DbContextOptions<WsxDbContext> options) : DbContext(op
     public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     public DbSet<Game> Games { get; set; }
-    public DbSet<Ship> Ship { get; set; }
-    public DbSet<Position> Position { get; set; }
+    public DbSet<Ship> Ships { get; set; }
+    public DbSet<Position> Positions { get; set; }
     public DbSet<Shot> Shots { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

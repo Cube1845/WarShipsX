@@ -1,33 +1,29 @@
 ﻿using WarShipsX.Application.Common.Models;
+using WarShipsX.Application.Hubs.Lobby.Models;
 
 namespace WarShipsX.Application.Hubs.Lobby;
 
 public class LobbySingleton
 {
-    private readonly List<Guid> _connectedUserIds = [];
+    private readonly List<PlayerData> _connectedPlayers = [];
 
-    public int GetConnectedUsersCount()
+    public List<PlayerData> GetPlayers()
     {
-        return _connectedUserIds.Count;
+        return _connectedPlayers;
     }
 
-    public void ConnectUser(string userId)
+    public int GetConnectedPlayersCount()
     {
-        if (!Guid.TryParse(userId, out var parsedId))
-        {
-            throw new WsxException("Invalid user ID");
-        }
-
-        _connectedUserIds.Add(parsedId);
+        return _connectedPlayers.Count;
     }
 
-    public void DisconnectUser(string userId)
+    public void ConnectPlayer(PlayerData data)
     {
-        if (!Guid.TryParse(userId, out var parsedId))
-        {
-            throw new WsxException("Invalid user ID");
-        }
+        _connectedPlayers.Add(data);
+    }
 
-        _connectedUserIds.Remove(parsedId);
+    public void DisconnectPlayer(string userId)
+    {
+        _connectedPlayers.RemoveAll(x => x.Id == Guid.Parse(userId));
     }
 }
