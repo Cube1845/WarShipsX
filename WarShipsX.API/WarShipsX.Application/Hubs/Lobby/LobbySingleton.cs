@@ -1,29 +1,41 @@
-﻿using WarShipsX.Application.Common.Models;
-using WarShipsX.Application.Hubs.Lobby.Models;
+﻿using WarShipsX.Application.Hubs.Lobby.Models;
 
 namespace WarShipsX.Application.Hubs.Lobby;
 
 public class LobbySingleton
 {
     private readonly List<PlayerData> _connectedPlayers = [];
+    private readonly Lock _lock = new();
 
     public List<PlayerData> GetPlayers()
     {
-        return _connectedPlayers;
+        lock (_lock)
+        {
+            return [.. _connectedPlayers];
+        }
     }
 
     public int GetConnectedPlayersCount()
     {
-        return _connectedPlayers.Count;
+        lock (_lock)
+        {
+            return _connectedPlayers.Count;
+        }
     }
 
     public void ConnectPlayer(PlayerData data)
     {
-        _connectedPlayers.Add(data);
+        lock (_lock)
+        {
+            _connectedPlayers.Add(data);
+        }
     }
 
     public void DisconnectPlayer(string userId)
     {
-        _connectedPlayers.RemoveAll(x => x.Id == Guid.Parse(userId));
+        lock (_lock)
+        {
+            _connectedPlayers.RemoveAll(x => x.Id == Guid.Parse(userId));
+        }
     }
 }

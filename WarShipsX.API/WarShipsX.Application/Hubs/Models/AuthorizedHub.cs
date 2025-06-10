@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using System.Security.Claims;
-using WarShipsX.Application.Common.Models;
+﻿using System.Security.Claims;
 
 namespace WarShipsX.Application.Hubs.Models;
 
@@ -10,16 +8,20 @@ public abstract class AuthorizedHub : Hub
     {
         var user = Context.User;
 
-        if (user?.Identity?.IsAuthenticated == true)
+        if (user?.Identity?.IsAuthenticated != true)
         {
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            Console.WriteLine($"User connected: {userId}");
-        }
-        else
-        {
-            throw new WsxException("Unauthenticated connection");
+            Context.Abort();
+            return;
         }
 
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        Console.WriteLine($"User connected: {userId}");
+
         await base.OnConnectedAsync();
+    }
+
+    protected string GetUserId()
+    {
+        return Context.User!.FindFirst(ClaimTypes.NameIdentifier)!.Value!;
     }
 }

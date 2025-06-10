@@ -1,5 +1,5 @@
-﻿using System.Security.Claims;
-using WarShipsX.Application.Hubs.Lobby.Models;
+﻿using WarShipsX.Application.Hubs.Lobby.Models;
+using WarShipsX.Application.Hubs.Lobby.StartGame;
 using WarShipsX.Application.Hubs.Models;
 
 namespace WarShipsX.Application.Hubs.Lobby;
@@ -13,11 +13,19 @@ public class LobbyHub(LobbySingleton lobby) : AuthorizedHub
         return base.OnConnectedAsync();
     }
 
-    public Task ConnectPlayer(List<List<PositionDto>> ships)
+    public async Task ConnectPlayer(List<List<PositionDto>> ships)
     {
-        _lobby.ConnectPlayer(new(Guid.Parse(GetUserId()), ships));
+        var userId = Guid.Parse(GetUserId());
 
-        return Task.CompletedTask;
+        _lobby.ConnectPlayer(new(userId, ships));
+
+        var startGameData = await new StartGameCommand(userId, ships).ExecuteAsync();
+
+        if (startGameData != null)
+        {
+            await Clients.User(startGameData.Player1Id.ToString()).SendAsync("StartGame", startGameData.GameId);
+            await Clients.User(startGameData.Player2Id.ToString()).SendAsync("StartGame", startGameData.GameId);
+        }
     }
 
     public override Task OnDisconnectedAsync(Exception? exception)
@@ -25,10 +33,5 @@ public class LobbyHub(LobbySingleton lobby) : AuthorizedHub
         _lobby.DisconnectPlayer(GetUserId());
 
         return base.OnDisconnectedAsync(exception);
-    }
-
-    private string GetUserId()
-    {
-        return Context.User!.FindFirst(ClaimTypes.NameIdentifier)!.Value!;
     }
 }

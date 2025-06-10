@@ -2,4 +2,4 @@
 
 namespace WarShipsX.Application.Hubs.Lobby.StartGame;
 
-public class StartGameCommand(Guid id, List<List<PositionDto>> ships) : PlayerData(id, ships), ICommand<Guid?>;
+public record StartGameCommand(Guid Id, List<List<PositionDto>> Ships) : PlayerData(Id, Ships), ICommand<GameData?>;
