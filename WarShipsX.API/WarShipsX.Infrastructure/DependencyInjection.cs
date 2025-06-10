@@ -1,9 +1,12 @@
 ﻿using FastEndpoints;
 using FastEndpoints.Security;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using WarShipsX.Application.Common.Interfaces;
 using WarShipsX.Infrastructure.Auth.Config;
 using WarShipsX.Infrastructure.Auth.Services;
@@ -29,7 +32,44 @@ public static class DependencyInjection
         services.Configure<TokenOptions>(configuration.GetSection(TokenOptions.Jwt));
 
         services
-            .AddAuthenticationJwtBearer(s => s.SigningKey = configuration["JwtSettings:SecretKey"]!)
+            .AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(configuration["JwtSettings:SecretKey"]!)),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+
+                        if (!string.IsNullOrEmpty(accessToken) && path.Value!.Contains("hub"))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+        services
             .AddAuthorization()
             .AddFastEndpoints();
 

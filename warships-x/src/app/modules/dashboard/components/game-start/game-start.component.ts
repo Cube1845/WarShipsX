@@ -4,6 +4,7 @@ import { BattlefieldBoardComponent } from '../battlefield-board/battlefield-boar
 import { SettingShipsService } from '../../services/setting-ships.service';
 import { Position } from '../../models/position';
 import { ToastService } from '../../../common/services/toast.service';
+import { LobbyService } from '../../services/lobby.service';
 
 @Component({
   selector: 'app-game-start',
@@ -14,6 +15,7 @@ import { ToastService } from '../../../common/services/toast.service';
 export class GameStartComponent {
   private readonly settingShipsService = inject(SettingShipsService);
   private readonly toastService = inject(ToastService);
+  private readonly lobbyService = inject(LobbyService);
 
   readonly maxFourShips: number = 1;
   readonly maxThreeShips: number = 2;
@@ -139,6 +141,21 @@ export class GameStartComponent {
       this.toastService.error('You have to set your ships first');
       return;
     }
+
+    const ships: Position[][] = [
+      this.settingShipsService.fourShip(),
+      this.settingShipsService.threeShips()[0](),
+      this.settingShipsService.threeShips()[1](),
+      this.settingShipsService.twoShips()[0](),
+      this.settingShipsService.twoShips()[1](),
+      this.settingShipsService.twoShips()[2](),
+      this.settingShipsService.oneShips()[0](),
+      this.settingShipsService.oneShips()[1](),
+      this.settingShipsService.oneShips()[2](),
+      this.settingShipsService.oneShips()[3](),
+    ];
+
+    this.lobbyService.connectPlayerToLobby(ships);
 
     this.userInQueue.set(true);
   }

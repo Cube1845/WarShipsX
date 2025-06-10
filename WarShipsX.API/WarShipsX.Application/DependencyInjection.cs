@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using WarShipsX.Application.Common;
 using WarShipsX.Application.Hubs.Lobby;
+using WarShipsX.Application.Hubs.Lobby.Handlers;
 
 namespace WarShipsX.Application;
 
@@ -15,11 +16,13 @@ public static class DependencyInjection
         services.AddSignalR();
 
         services.AddSingleton<LobbySingleton>();
+
+        services.AddScoped<StartGameHandler>();
     }
 
     public static void UseApplicationDI(this WebApplication app)
     {
         app.UseExceptionHandler();
-        app.MapHub<LobbyHub>("/api/lobbyhub");
+        app.MapHub<LobbyHub>("/api/lobby-hub");
     }
 }
