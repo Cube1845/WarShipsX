@@ -2,7 +2,7 @@
 
 namespace WarShipsX.Application.Hubs.Lobby;
 
-public class LobbySingleton
+public class Lobby
 {
     private readonly List<PlayerData> _connectedPlayers = [];
     private readonly Lock _lock = new();

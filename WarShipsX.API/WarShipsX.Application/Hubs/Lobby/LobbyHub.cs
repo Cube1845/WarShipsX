@@ -1,35 +1,59 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using WarShipsX.Application.Hubs.Lobby.Handlers;
 using WarShipsX.Application.Hubs.Lobby.Models;
+using WarShipsX.Application.Hubs.Lobby.StartGame;
 using WarShipsX.Application.Hubs.Models;
 
 namespace WarShipsX.Application.Hubs.Lobby;
 
 [Authorize]
-public class LobbyHub(LobbySingleton lobby, StartGameHandler startGame) : AuthorizedHub
+public class LobbyHub(Lobby lobby) : AuthorizedHub
 {
-    private readonly LobbySingleton _lobby = lobby;
-    private readonly StartGameHandler _startGame = startGame;
+    private readonly Lobby _lobby = lobby;
 
-    public async Task ConnectPlayer(List<List<PositionDto>> ships)
+    public override async Task OnConnectedAsync()
+    {
+        await base.OnConnectedAsync();
+
+        await Clients.User(GetUserId()).SendAsync("PlayersCountChanged", _lobby.GetConnectedPlayersCount());
+
+        return;
+    }
+
+    public async Task JoinLobby(List<List<PositionDto>> ships)
     {
         var userId = Guid.Parse(GetUserId());
 
         _lobby.ConnectPlayer(new(userId, ships));
 
-        var startGameData = await _startGame.ExecuteAsync(new PlayerData(userId, ships));
+        var startGameData = await new StartGameCommand(userId, ships).ExecuteAsync();
 
         if (startGameData != null)
         {
             await Clients.User(startGameData.Player1Id.ToString()).SendAsync("StartGame", startGameData.GameId);
             await Clients.User(startGameData.Player2Id.ToString()).SendAsync("StartGame", startGameData.GameId);
         }
+
+        await SendPlayersCount();
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public async Task LeaveLobby()
     {
         _lobby.DisconnectPlayer(GetUserId());
+        await SendPlayersCount();
+    }
 
-        return base.OnDisconnectedAsync(exception);
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        _lobby.DisconnectPlayer(GetUserId());
+        await SendPlayersCount();
+
+        await base.OnDisconnectedAsync(exception);
+
+        return;
+    }
+
+    private async Task SendPlayersCount()
+    {
+        await Clients.All.SendAsync("PlayersCountChanged", _lobby.GetConnectedPlayersCount());
     }
 }

@@ -3,26 +3,28 @@ using WarShipsX.Application.Hubs.Lobby.Models;
 using WarShipsX.Application.Hubs.Models.Entities;
 using WarShipsX.Application.Hubs.Models.Entities.Game;
 
-namespace WarShipsX.Application.Hubs.Lobby.Handlers;
+namespace WarShipsX.Application.Hubs.Lobby.StartGame;
 
-public class StartGameHandler(IWsxDbContext context, LobbySingleton lobby)
+public class StartGameHandler(IWsxDbContext context, Lobby lobby) : ICommandHandler<StartGameCommand, GameData?>
 {
     private readonly IWsxDbContext _context = context;
-    private readonly LobbySingleton _lobby = lobby;
+    private readonly Lobby _lobby = lobby;
     private static readonly SemaphoreSlim _gameLock = new(1, 1);
 
-    public async Task<GameData?> ExecuteAsync(PlayerData playerData, CancellationToken ct = default)
+    public async Task<GameData?> ExecuteAsync(StartGameCommand command, CancellationToken ct)
     {
         await _gameLock.WaitAsync(ct);
 
         try
         {
             if (_lobby.GetConnectedPlayersCount() < 2)
+            {
                 return null;
+            }
 
             var users = _lobby
                 .GetPlayers()
-                .Where(x => x.Id != playerData.Id)
+                .Where(x => x.Id != command.Id)
                 .ToList();
 
             if (users.Count == 0)
@@ -32,7 +34,7 @@ public class StartGameHandler(IWsxDbContext context, LobbySingleton lobby)
 
             var opponent = users[Random.Shared.Next(0, users.Count)];
 
-            return await CreateNewGame(playerData, opponent, ct);
+            return await CreateNewGame(command, opponent, ct);
         }
         finally
         {

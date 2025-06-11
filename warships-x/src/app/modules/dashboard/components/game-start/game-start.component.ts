@@ -1,4 +1,12 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { WsButtonComponent } from '../../../common/components/ws-button/ws-button.component';
 import { BattlefieldBoardComponent } from '../battlefield-board/battlefield-board.component';
 import { SettingShipsService } from '../../services/setting-ships.service';
@@ -12,7 +20,7 @@ import { LobbyService } from '../../services/lobby.service';
   templateUrl: './game-start.component.html',
   styleUrl: './game-start.component.scss',
 })
-export class GameStartComponent {
+export class GameStartComponent implements OnInit, OnDestroy {
   private readonly settingShipsService = inject(SettingShipsService);
   private readonly toastService = inject(ToastService);
   private readonly lobbyService = inject(LobbyService);
@@ -63,6 +71,20 @@ export class GameStartComponent {
       this.settingShipsService.oneShips().filter((ship) => ship().length > 0)
         .length
   );
+
+  constructor() {
+    this.lobbyService.playersCountChanged$.subscribe((playersCount) =>
+      this.playersWaitingCount.set(playersCount)
+    );
+  }
+
+  ngOnInit(): void {
+    this.lobbyService.connect();
+  }
+
+  ngOnDestroy(): void {
+    this.lobbyService.stopConnection();
+  }
 
   clearShips(): void {
     if (this.userInQueue()) {
@@ -155,12 +177,12 @@ export class GameStartComponent {
       this.settingShipsService.oneShips()[3](),
     ];
 
-    this.lobbyService.connectPlayerToLobby(ships);
-
-    this.userInQueue.set(true);
+    this.lobbyService
+      .joinLobby(ships)
+      .subscribe(() => this.userInQueue.set(true));
   }
 
   leaveQueue(): void {
-    this.userInQueue.set(false);
+    this.lobbyService.leaveLobby().subscribe(() => this.userInQueue.set(false));
   }
 }
