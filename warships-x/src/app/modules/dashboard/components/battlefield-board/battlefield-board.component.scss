@@ -15,6 +15,26 @@
 
     table {
         border-collapse: collapse;
+        
+        @include respond("sm") {
+            margin-right: $tr-size-mobile;
+        }
+
+        @include respond("md") {
+            margin-right: $tr-size-mobile-big;
+        }
+
+        @include respond("lg") {
+            margin-right: $tr-size-mobile-large;
+        }
+
+        @include respond("xl") {
+            margin-right: $tr-size-xl;
+        }
+
+        @include respond("desktop") {
+            margin-right: $tr-size-desktop;
+        }
 
         td {
             font-size: 0.8rem;

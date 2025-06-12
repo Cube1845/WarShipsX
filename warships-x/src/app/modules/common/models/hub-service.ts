@@ -33,7 +33,9 @@ export abstract class HubService {
   }
 
   invoke(message: string, data?: any): Observable<void> {
-    return from(this.hubConnection!.invoke(message, !!data ? data : null));
+    return !!data
+      ? from(this.hubConnection!.invoke(message, data))
+      : from(this.hubConnection!.invoke(message));
   }
 
   stopConnection(): Observable<void> {

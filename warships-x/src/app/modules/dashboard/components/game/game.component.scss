@@ -24,7 +24,11 @@
     }
 
     h1 {
-        color: var(--p-primary-color);
+        color: var(--p-surface-400);
+
+        &.current-turn {
+            color: var(--p-primary-color) !important;
+        }
     }
 
     h2 {

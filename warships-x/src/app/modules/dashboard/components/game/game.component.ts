@@ -35,7 +35,7 @@ export class GameComponent {
     this.currentSelectedTile.set(position);
 
     this.dialogService
-      .displayDialog(ShootDialogComponent, 'Choose field', position, {
+      .displayDialog(ShootDialogComponent, 'Selected field', position, {
         position: 'top',
       })
       .subscribe({

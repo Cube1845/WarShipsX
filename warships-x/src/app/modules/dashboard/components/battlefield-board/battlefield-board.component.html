@@ -7,7 +7,7 @@
                 } @else if (x > 0 && y == 0) {
                     <td>{{ alphaChars[x - 1]}}</td>
                 } @else if (x == 0 && y > 0) {
-                    <td>{{ y }}</td>
+                    <td class="text-right pr-2">{{ y }}</td>
                 } @else {
                     <td [class]="(highlightedPositionInclude({letter: alphaChars[x - 1], number: y})() ? ' highlighted ' : ' ') +
                         ' border ' +
