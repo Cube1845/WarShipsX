@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace WarShipsX.Application.Hubs.Models;
+namespace WarShipsX.Application.Common.Models;
 
 public abstract class AuthorizedHub : Hub
 {

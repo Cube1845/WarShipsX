@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using WarShipsX.Application.Hubs.Lobby.Models;
-using WarShipsX.Application.Hubs.Lobby.StartGame;
-using WarShipsX.Application.Hubs.Models;
+using WarShipsX.Application.Common.Models;
+using WarShipsX.Application.Modules.Lobby.Commands.StartGame;
+using WarShipsX.Application.Modules.Lobby.Models.Game;
 
-namespace WarShipsX.Application.Hubs.Lobby;
+namespace WarShipsX.Application.Modules.Lobby;
 
 [Authorize]
-public class LobbyHub(Lobby lobby) : AuthorizedHub
+public class LobbyHub(LobbyService lobby) : AuthorizedHub
 {
-    private readonly Lobby _lobby = lobby;
+    private readonly LobbyService _lobby = lobby;
 
     public override async Task OnConnectedAsync()
     {
@@ -19,7 +19,7 @@ public class LobbyHub(Lobby lobby) : AuthorizedHub
         return;
     }
 
-    public async Task JoinLobby(List<List<PositionDto>> ships)
+    public async Task JoinLobby(List<List<Position>> ships)
     {
         var userId = Guid.Parse(GetUserId());
 

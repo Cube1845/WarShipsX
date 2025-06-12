@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WarShipsX.Application.Hubs.Models.Entities;
-using WarShipsX.Application.Hubs.Models.Entities.Game;
+using WarShipsX.Application.Modules.Lobby.Models.Game;
+using WarShipsX.Application.Modules.Lobby.Models.Game.Game;
 
 namespace WarShipsX.Application.Common.Interfaces;
 

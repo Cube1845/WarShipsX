@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using WarShipsX.Application.Hubs.Models.Entities;
+using WarShipsX.Application.Modules.Lobby.Models.Game.Game;
 
 namespace WarShipsX.Infrastructure.Persistence.Configuration.Game;
 

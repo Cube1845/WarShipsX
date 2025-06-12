@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WarShipsX.Application.Common.Interfaces;
-using WarShipsX.Application.Hubs.Models.Entities;
-using WarShipsX.Application.Hubs.Models.Entities.Game;
+using WarShipsX.Application.Modules.Lobby.Models.Game;
+using WarShipsX.Application.Modules.Lobby.Models.Game.Game;
 using WarShipsX.Infrastructure.Auth.Entities;
 
 namespace WarShipsX.Infrastructure.Persistence;

@@ -1,8 +1,8 @@
-﻿using WarShipsX.Application.Hubs.Lobby.Models;
+﻿using WarShipsX.Application.Modules.Lobby.Models.Game.Game;
 
-namespace WarShipsX.Application.Hubs.Lobby;
+namespace WarShipsX.Application.Modules.Lobby;
 
-public class Lobby
+public class LobbyService
 {
     private readonly List<PlayerData> _connectedPlayers = [];
     private readonly Lock _lock = new();

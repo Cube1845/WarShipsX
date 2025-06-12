@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using WarShipsX.Application.Common;
-using WarShipsX.Application.Hubs.Lobby;
-using WarShipsX.Application.Hubs.Lobby.StartGame;
+using WarShipsX.Application.Modules.Lobby;
 
 namespace WarShipsX.Application;
 
@@ -15,7 +14,7 @@ public static class DependencyInjection
 
         services.AddSignalR();
 
-        services.AddSingleton<Lobby>();
+        services.AddSingleton<LobbyService>();
     }
 
     public static void UseApplicationDI(this WebApplication app)
