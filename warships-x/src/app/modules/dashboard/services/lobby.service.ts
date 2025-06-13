@@ -8,16 +8,11 @@ import { Ship } from '../models/ship';
   providedIn: 'root',
 })
 export class LobbyService extends HubService {
-  private startGameSubject = new Subject<string>();
-  startGame$ = this.startGameSubject.asObservable();
-
   private playersCountChangedSubject = new Subject<number>();
   playersCountChanged$ = this.playersCountChangedSubject.asObservable();
 
   private registerEvents(): void {
-    this.hubConnection!.on('StartGame', (gameId: string) => {
-      this.startGameSubject.next(gameId);
-    });
+    this.hubConnection!.on('StartGame', () => {});
 
     this.hubConnection!.on('PlayersCountChanged', (count: number) => {
       this.playersCountChangedSubject.next(count);

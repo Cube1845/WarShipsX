@@ -1,10 +1,12 @@
-﻿using WarShipsX.Application.Modules.Lobby.Models;
+﻿using WarShipsX.Application.Modules.Game;
+using WarShipsX.Application.Modules.Lobby.Models;
 
 namespace WarShipsX.Application.Modules.Lobby.Commands.StartGame;
 
-public class StartGameHandler(LobbyService lobby) : ICommandHandler<StartGameCommand, GameDto?>
+public class StartGameHandler(LobbyService lobby, GameService game) : ICommandHandler<StartGameCommand, GameDto?>
 {
     private readonly LobbyService _lobby = lobby;
+    private readonly GameService _game = game;
     private static readonly SemaphoreSlim _lock = new(1, 1);
 
     public async Task<GameDto?> ExecuteAsync(StartGameCommand command, CancellationToken ct)
@@ -30,8 +32,9 @@ public class StartGameHandler(LobbyService lobby) : ICommandHandler<StartGameCom
 
             var opponent = users[Random.Shared.Next(0, users.Count)];
 
-            // change here
-            return await CreateNewGame(command, opponent, ct);
+            _game.CreateNewGame(new(command.Id, command.Ships, []), opponent);
+
+            return new(command.Id, opponent.Id);
         }
         finally
         {

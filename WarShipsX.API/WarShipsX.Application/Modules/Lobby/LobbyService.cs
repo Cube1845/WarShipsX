@@ -1,4 +1,4 @@
-﻿using WarShipsX.Application.Modules.Lobby.Models.Game;
+﻿using WarShipsX.Application.Modules.Game.Models;
 
 namespace WarShipsX.Application.Modules.Lobby;
 
@@ -23,7 +23,7 @@ public class LobbyService
         }
     }
 
-    public void ConnectPlayer(PlayerData data)
+    public void AddPlayerToQueue(PlayerData data)
     {
         lock (_lock)
         {
@@ -31,7 +31,7 @@ public class LobbyService
         }
     }
 
-    public void DisconnectPlayer(string userId)
+    public void RemovePlayerFromQueue(string userId)
     {
         lock (_lock)
         {

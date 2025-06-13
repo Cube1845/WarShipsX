@@ -1,5 +1,5 @@
-﻿using WarShipsX.Application.Modules.Lobby.Models;
-using WarShipsX.Application.Modules.Lobby.Models.Game;
+﻿using WarShipsX.Application.Modules.Game.Models;
+using WarShipsX.Application.Modules.Lobby.Models;
 
 namespace WarShipsX.Application.Modules.Lobby.Commands.StartGame;
 

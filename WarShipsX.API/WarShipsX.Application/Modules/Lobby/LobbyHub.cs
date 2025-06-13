@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using WarShipsX.Application.Common.Models;
+using WarShipsX.Application.Modules.Game.Models;
 using WarShipsX.Application.Modules.Lobby.Commands.StartGame;
-using WarShipsX.Application.Modules.Lobby.Models.Game;
 
 namespace WarShipsX.Application.Modules.Lobby;
 
@@ -23,14 +23,14 @@ public class LobbyHub(LobbyService lobby) : AuthorizedHub
     {
         var userId = Guid.Parse(GetUserId());
 
-        _lobby.ConnectPlayer(new(userId, ships, []));
+        _lobby.AddPlayerToQueue(new(userId, ships, []));
 
         var startGameData = await new StartGameCommand(userId, ships).ExecuteAsync();
 
         if (startGameData != null)
         {
-            await Clients.User(startGameData.Player1Id.ToString()).SendAsync("StartGame", startGameData.GameId);
-            await Clients.User(startGameData.Player2Id.ToString()).SendAsync("StartGame", startGameData.GameId);
+            await Clients.User(startGameData.Player1Id.ToString()).SendAsync("StartGame");
+            await Clients.User(startGameData.Player2Id.ToString()).SendAsync("StartGame");
         }
 
         await SendPlayersCount();
@@ -38,13 +38,13 @@ public class LobbyHub(LobbyService lobby) : AuthorizedHub
 
     public async Task LeaveLobby()
     {
-        _lobby.DisconnectPlayer(GetUserId());
+        _lobby.RemovePlayerFromQueue(GetUserId());
         await SendPlayersCount();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        _lobby.DisconnectPlayer(GetUserId());
+        _lobby.RemovePlayerFromQueue(GetUserId());
         await SendPlayersCount();
 
         await base.OnDisconnectedAsync(exception);

@@ -1,4 +1,4 @@
-﻿namespace WarShipsX.Application.Modules.Lobby.Models.Game;
+﻿namespace WarShipsX.Application.Modules.Game.Models;
 
 public record Ship(List<Position> Positions)
 {

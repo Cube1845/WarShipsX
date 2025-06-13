@@ -83,7 +83,7 @@ export class GameStartComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.lobbyService.stopConnection();
+    this.lobbyService.disconnect();
   }
 
   clearShips(): void {

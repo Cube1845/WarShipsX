@@ -1,4 +1,4 @@
-﻿namespace WarShipsX.Application.Modules.Lobby.Models.Game;
+﻿namespace WarShipsX.Application.Modules.Game.Models;
 
 public class Game(PlayerData player1, PlayerData player2, Turn turn)
 {
