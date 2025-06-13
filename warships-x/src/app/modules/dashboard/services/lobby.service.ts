@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { HubService } from '../../common/models/hub-service';
 import { Position } from '../models/position';
+import { Ship } from '../models/ship';
 
 @Injectable({
   providedIn: 'root',
@@ -27,7 +28,7 @@ export class LobbyService extends HubService {
     super('lobby-hub', () => this.registerEvents());
   }
 
-  joinLobby(ships: Position[][]): Observable<void> {
+  joinLobby(ships: Ship[]): Observable<void> {
     return this.invoke('JoinLobby', ships);
   }
 

@@ -178,7 +178,11 @@ export class GameStartComponent implements OnInit, OnDestroy {
     ];
 
     this.lobbyService
-      .joinLobby(ships)
+      .joinLobby(
+        ships.map((s) => {
+          return { positions: s };
+        })
+      )
       .subscribe(() => this.userInQueue.set(true));
   }
 

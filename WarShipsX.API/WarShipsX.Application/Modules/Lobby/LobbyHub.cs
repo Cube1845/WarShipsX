@@ -19,11 +19,11 @@ public class LobbyHub(LobbyService lobby) : AuthorizedHub
         return;
     }
 
-    public async Task JoinLobby(List<List<Position>> ships)
+    public async Task JoinLobby(List<Ship> ships)
     {
         var userId = Guid.Parse(GetUserId());
 
-        _lobby.ConnectPlayer(new(userId, ships));
+        _lobby.ConnectPlayer(new(userId, ships, []));
 
         var startGameData = await new StartGameCommand(userId, ships).ExecuteAsync();
 

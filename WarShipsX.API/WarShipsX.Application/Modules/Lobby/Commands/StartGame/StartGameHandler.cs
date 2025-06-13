@@ -1,17 +1,15 @@
-﻿using WarShipsX.Application.Common.Interfaces;
-using WarShipsX.Application.Modules.Lobby.Models;
+﻿using WarShipsX.Application.Modules.Lobby.Models;
 
 namespace WarShipsX.Application.Modules.Lobby.Commands.StartGame;
 
-public class StartGameHandler(IWsxDbContext context, LobbyService lobby) : ICommandHandler<StartGameCommand, GameDto?>
+public class StartGameHandler(LobbyService lobby) : ICommandHandler<StartGameCommand, GameDto?>
 {
-    private readonly IWsxDbContext _context = context;
     private readonly LobbyService _lobby = lobby;
-    private static readonly SemaphoreSlim _gameLock = new(1, 1);
+    private static readonly SemaphoreSlim _lock = new(1, 1);
 
     public async Task<GameDto?> ExecuteAsync(StartGameCommand command, CancellationToken ct)
     {
-        await _gameLock.WaitAsync(ct);
+        await _lock.WaitAsync(ct);
 
         try
         {
@@ -37,7 +35,7 @@ public class StartGameHandler(IWsxDbContext context, LobbyService lobby) : IComm
         }
         finally
         {
-            _gameLock.Release();
+            _lock.Release();
         }
     }
 }

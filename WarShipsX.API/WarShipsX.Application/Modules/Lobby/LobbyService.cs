@@ -1,4 +1,4 @@
-﻿using WarShipsX.Application.Modules.Lobby.Models.Game.Game;
+﻿using WarShipsX.Application.Modules.Lobby.Models.Game;
 
 namespace WarShipsX.Application.Modules.Lobby;
 
