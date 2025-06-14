@@ -14,16 +14,16 @@ public class LobbyHub(LobbyService lobby) : AuthorizedHub
     {
         await base.OnConnectedAsync();
 
-        await Clients.User(GetUserId()).SendAsync("PlayersCountChanged", _lobby.GetConnectedPlayersCount());
+        await Clients.User(GetUserId().ToString()).SendAsync("PlayersCountChanged", _lobby.GetConnectedPlayersCount());
 
         return;
     }
 
     public async Task JoinLobby(List<Ship> ships)
     {
-        var userId = Guid.Parse(GetUserId());
+        var userId = GetUserId();
 
-        _lobby.AddPlayerToQueue(new(userId, ships, []));
+        _lobby.AddPlayerToQueue(new(userId, ships));
 
         var startGameData = await new StartGameCommand(userId, ships).ExecuteAsync();
 

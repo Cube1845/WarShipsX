@@ -31,11 +31,11 @@ public class LobbyService
         }
     }
 
-    public void RemovePlayerFromQueue(string userId)
+    public void RemovePlayerFromQueue(Guid userId)
     {
         lock (_lock)
         {
-            _connectedPlayers.RemoveAll(x => x.Id == Guid.Parse(userId));
+            _connectedPlayers.RemoveAll(x => x.Id == userId);
         }
     }
 }

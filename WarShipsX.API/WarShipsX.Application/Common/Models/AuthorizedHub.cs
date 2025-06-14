@@ -20,8 +20,8 @@ public abstract class AuthorizedHub : Hub
         await base.OnConnectedAsync();
     }
 
-    protected string GetUserId()
+    protected Guid GetUserId()
     {
-        return Context.User!.FindFirst(ClaimTypes.NameIdentifier)!.Value!;
+        return Guid.Parse(Context.User!.FindFirst(ClaimTypes.NameIdentifier)!.Value!);
     }
 }

@@ -7,17 +7,15 @@ public class StartGameHandler(LobbyService lobby, GameService game) : ICommandHa
 {
     private readonly LobbyService _lobby = lobby;
     private readonly GameService _game = game;
-    private static readonly SemaphoreSlim _lock = new(1, 1);
+    private readonly Lock _lock = new();
 
-    public async Task<GameDto?> ExecuteAsync(StartGameCommand command, CancellationToken ct)
+    public Task<GameDto?> ExecuteAsync(StartGameCommand command, CancellationToken ct)
     {
-        await _lock.WaitAsync(ct);
-
-        try
+        lock (_lock)
         {
             if (_lobby.GetConnectedPlayersCount() < 2)
             {
-                return null;
+                return Task.FromResult<GameDto?>(null);
             }
 
             var users = _lobby
@@ -27,18 +25,14 @@ public class StartGameHandler(LobbyService lobby, GameService game) : ICommandHa
 
             if (users.Count == 0)
             {
-                return null;
+                return Task.FromResult<GameDto?>(null);
             }
 
             var opponent = users[Random.Shared.Next(0, users.Count)];
 
-            _game.CreateNewGame(new(command.Id, command.Ships, []), opponent);
+            _game.CreateNewGame(new(command.Id, command.Ships), opponent);
 
-            return new(command.Id, opponent.Id);
-        }
-        finally
-        {
-            _lock.Release();
+            return Task.FromResult<GameDto?>(new(command.Id, opponent.Id));
         }
     }
 }
