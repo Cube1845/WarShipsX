@@ -31,4 +31,19 @@ public class Game(PlayerData player1, PlayerData player2, Turn turn)
 
         return null;
     }
+
+    public PlayerData? GetOpponentData(Guid playerId)
+    {
+        if (Player1.Id == playerId)
+        {
+            return Player2;
+        }
+
+        if (Player2.Id == playerId)
+        {
+            return Player1;
+        }
+
+        return null;
+    }
 }

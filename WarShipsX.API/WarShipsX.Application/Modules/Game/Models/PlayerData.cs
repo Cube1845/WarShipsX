@@ -12,7 +12,7 @@ public class PlayerData(Guid id, List<Ship> ships)
         DisconnectedDate = date;
     }
 
-    public void ClearDisconnectedDate()
+    public void UnsetDisconnectedDate()
     {
         DisconnectedDate = null;
     }

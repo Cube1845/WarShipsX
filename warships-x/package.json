@@ -20,7 +20,7 @@
     "@capacitor/android": "^7.2.0",
     "@capacitor/angular": "^2.0.3",
     "@capacitor/core": "latest",
-    "@capacitor/ios": "^7.2.0",
+    "@capacitor/ios": "^7.3.0",
     "@capacitor/screen-orientation": "^7.0.1",
     "@microsoft/signalr": "^8.0.7",
     "@primeng/themes": "^19.1.3",

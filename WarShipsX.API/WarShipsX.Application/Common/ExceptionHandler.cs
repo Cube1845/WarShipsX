@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 using WarShipsX.Application.Common.Models;
 
-namespace WarShipsX.Application.Common;
+namespace WarShipsX.Infrastructure;
 
 public sealed class ExceptionHandler : IExceptionHandler
 {
@@ -20,7 +20,7 @@ public sealed class ExceptionHandler : IExceptionHandler
         httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
         httpContext.Response.ContentType = "application/json";
 
-        Result result = Result.Error(exception.Message);
+        var result = Result.Error(exception.Message);
 
         await httpContext.Response
             .WriteAsJsonAsync(result, ct);
