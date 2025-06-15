@@ -7,13 +7,15 @@ public class PlayerData(Guid id, List<Ship> ships)
     public List<Position> ExecutedShots { get; private init; } = [];
     public DateTime? DisconnectedDate { get; private set; } = null;
 
-    public void SetDisconnectedDate(DateTime date)
+    public PlayerData SetDisconnectedDate(DateTime date)
     {
         DisconnectedDate = date;
+        return this;
     }
 
-    public void UnsetDisconnectedDate()
+    public PlayerData UnsetDisconnectedDate()
     {
         DisconnectedDate = null;
+        return this;
     }
 }

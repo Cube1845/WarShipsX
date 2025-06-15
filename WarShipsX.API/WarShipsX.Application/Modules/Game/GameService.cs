@@ -1,6 +1,5 @@
 ﻿using WarShipsX.Application.Common.Models;
 using WarShipsX.Application.Modules.Game.Models;
-using WarShipsX.Application.Modules.Game.Models.Enums;
 
 namespace WarShipsX.Application.Modules.Game;
 
