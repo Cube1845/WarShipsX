@@ -1,4 +1,5 @@
 ﻿using WarShipsX.Application.Common.Models;
+using WarShipsX.Application.Modules.Common.Models;
 using WarShipsX.Application.Modules.Game.Models;
 
 namespace WarShipsX.Application.Modules.Game;
@@ -28,19 +29,19 @@ public class GameService
         } 
     }
 
-    public void RemoveGame(Guid playerId)
+    public void RemoveGame(Guid participantId)
     {
         lock (_lock)
         {
-            _games.RemoveAll(g => g.Player1.Id == playerId || g.Player2.Id == playerId);
+            _games.RemoveAll(g => g.Player1.Id == participantId || g.Player2.Id == participantId);
         }
     }
 
-    public Models.Game? GetGame(Guid playerId)
+    public Models.Game? GetGame(Guid participantId)
     {
         lock (_lock)
         {
-            return _games.FirstOrDefault(g => g.Player1.Id == playerId || g.Player2.Id == playerId);
+            return _games.FirstOrDefault(g => g.Player1.Id == participantId || g.Player2.Id == participantId);
         }
     }
 }

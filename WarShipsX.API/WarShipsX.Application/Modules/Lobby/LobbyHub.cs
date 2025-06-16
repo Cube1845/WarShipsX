@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using WarShipsX.Application.Common.Models;
-using WarShipsX.Application.Modules.Game.Models;
+using WarShipsX.Application.Modules.Common.Models;
 using WarShipsX.Application.Modules.Lobby.Commands.StartGame;
 
 namespace WarShipsX.Application.Modules.Lobby;

@@ -1,37 +1,69 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using WarShipsX.Application.Common.Models;
+using WarShipsX.Application.Modules.Common.Services;
 using WarShipsX.Application.Modules.Game.Commands.SendPlayerData;
+using WarShipsX.Application.Modules.Game.Commands.UserDisconnected;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace WarShipsX.Application.Modules.Game;
 
 [Authorize]
-public class GameHub(GameService game, TimeProvider timeProvider) : AuthorizedHub
+public class GameHub(GameService game, ConnectionService reconnectionService) : AuthorizedHub
 {
     private readonly GameService _game = game;
-    private readonly TimeProvider _timeProvider = timeProvider;
+    private readonly ConnectionService _reconnectionService = reconnectionService;
 
     public override async Task OnConnectedAsync()
     {
+        await base.OnConnectedAsync();
+
         var userId = GetUserId();
 
         var data = await new SendPlayerDataCommand(userId).ExecuteAsync();
 
-        if (data != null)
+        if (data == null)
         {
-            await Clients.User(userId.ToString()).SendAsync("PlayerDataSent", data);
+            Context.Abort();
+            return;
         }
 
-        await base.OnConnectedAsync();
+        await Clients.User(userId.ToString()).SendAsync("PlayerDataSent", data);
 
-        return;
+        if (_reconnectionService._playerDisconnections.TryGetValue(userId, out var cts))
+        {
+            cts.Cancel();
+        }
+
+        var opponentData = _game.GetGame(userId)!.GetOpponentData(userId)!;
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
+        await base.OnDisconnectedAsync(exception);
+
         var userId = GetUserId();
 
-        _game.GetGame(userId)?.GetPlayerData(userId)?.SetDisconnectedDate(_timeProvider.GetUtcNow().LocalDateTime);
+        var data = await new UserDisconnectedCommand(userId).ExecuteAsync();
 
-        return base.OnDisconnectedAsync(exception);
+        if (data == null)
+        {
+            return;
+        }
+
+        if (!data.OpponentAlsoDisconnected)
+        {
+            await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentDisconnected");
+        }
+
+        await _reconnectionService.RegisterDisconnection(userId,
+            async () =>
+            {
+                await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentReconnected");
+            },
+            async () =>
+            {
+                await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentAbandoned");
+            }
+        );
     }
 }

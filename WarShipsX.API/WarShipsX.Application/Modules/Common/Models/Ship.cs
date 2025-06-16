@@ -1,9 +1,3 @@
-﻿namespace WarShipsX.Application.Modules.Game.Models;
+﻿namespace WarShipsX.Application.Modules.Common.Models;
 
-public record Ship(List<Position> Positions)
-{
-    public static implicit operator Ship(List<Position> positions)
-    {
-        return new(positions);
-    }
-}
+public record Ship(List<Position> Positions);

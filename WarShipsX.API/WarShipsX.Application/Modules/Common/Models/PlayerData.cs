@@ -1,4 +1,4 @@
-﻿namespace WarShipsX.Application.Modules.Game.Models;
+﻿namespace WarShipsX.Application.Modules.Common.Models;
 
 public class PlayerData(Guid id, List<Ship> ships)
 {
@@ -7,15 +7,13 @@ public class PlayerData(Guid id, List<Ship> ships)
     public List<Position> ExecutedShots { get; private init; } = [];
     public DateTime? DisconnectedDate { get; private set; } = null;
 
-    public PlayerData SetDisconnectedDate(DateTime date)
+    public void SetDisconnectedDate(DateTime date)
     {
         DisconnectedDate = date;
-        return this;
     }
 
-    public PlayerData UnsetDisconnectedDate()
+    public void UnsetDisconnectedDate()
     {
         DisconnectedDate = null;
-        return this;
     }
 }

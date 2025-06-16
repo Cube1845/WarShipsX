@@ -1,4 +1,6 @@
-﻿namespace WarShipsX.Application.Modules.Game.Models;
+﻿using WarShipsX.Application.Modules.Common.Models;
+
+namespace WarShipsX.Application.Modules.Game.Models;
 
 public class Game(PlayerData player1, PlayerData player2, Turn turn)
 {

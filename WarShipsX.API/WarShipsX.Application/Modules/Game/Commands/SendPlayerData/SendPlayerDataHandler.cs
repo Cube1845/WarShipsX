@@ -1,31 +1,36 @@
-﻿using WarShipsX.Application.Modules.Game.Models;
+﻿using WarShipsX.Application.Modules.Common.Models;
 
 namespace WarShipsX.Application.Modules.Game.Commands.SendPlayerData;
 
 public class SendPlayerDataHandler(GameService gameService) : ICommandHandler<SendPlayerDataCommand, SendPlayerDataResponse?>
 {
     private readonly GameService _game = gameService;
+    private readonly Lock _lock = new();
 
     public Task<SendPlayerDataResponse?> ExecuteAsync(SendPlayerDataCommand command, CancellationToken ct)
     {
-        var game = _game.GetGame(command.UserId);
-
-        if (game == null)
+        lock (_lock)
         {
-            return Task.FromResult<SendPlayerDataResponse?>(null);
+            var game = _game.GetGame(command.UserId);
+
+            if (game == null)
+            {
+                return Task.FromResult<SendPlayerDataResponse?>(null);
+            }
+
+            var playerData = game.GetPlayerData(command.UserId);
+            var opponentShips = game.GetOpponentData(command.UserId)?.Ships;
+
+            if (playerData == null || opponentShips == null)
+            {
+                return Task.FromResult<SendPlayerDataResponse?>(null);
+            }
+
+            playerData.UnsetDisconnectedDate();
+
+            var executedShots = GetExecutedShots(opponentShips, playerData.ExecutedShots);
+            return Task.FromResult<SendPlayerDataResponse?>(new(playerData.Ships, executedShots));
         }
-
-        var playerData = game.GetPlayerData(command.UserId);
-        var opponentShips = game.GetOpponentData(command.UserId)?.Ships;
-
-        if (playerData == null || opponentShips == null)
-        {
-            return Task.FromResult<SendPlayerDataResponse?>(null);
-        }
-
-        var executedShots = GetExecutedShots(opponentShips, playerData.ExecutedShots);
-
-        return Task.FromResult<SendPlayerDataResponse?>(new(playerData.Ships, executedShots));
     }
 
     private List<Shot> GetExecutedShots(List<Ship> opponentShips, List<Position> playerShots)

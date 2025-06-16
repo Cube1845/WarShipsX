@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using WarShipsX.Application.Common;
+using WarShipsX.Application.Modules.Common.Services;
 using WarShipsX.Application.Modules.Game;
 using WarShipsX.Application.Modules.Lobby;
 using WarShipsX.Infrastructure;
@@ -18,6 +19,7 @@ public static class DependencyInjection
 
         services.AddSingleton<LobbyService>();
         services.AddSingleton<GameService>();
+        services.AddSingleton<ConnectionService>();
     }
 
     public static void UseApplicationDI(this WebApplication app)
