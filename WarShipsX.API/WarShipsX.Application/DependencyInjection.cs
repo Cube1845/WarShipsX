@@ -20,6 +20,8 @@ public static class DependencyInjection
         services.AddSingleton<LobbyService>();
         services.AddSingleton<GameService>();
         services.AddSingleton<ConnectionService>();
+
+        services.AddTransient<AwaitableTaskService>();
     }
 
     public static void UseApplicationDI(this WebApplication app)

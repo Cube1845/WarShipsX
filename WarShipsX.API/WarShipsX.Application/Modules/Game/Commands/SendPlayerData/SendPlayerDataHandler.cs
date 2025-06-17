@@ -26,6 +26,11 @@ public class SendPlayerDataHandler(GameService gameService) : ICommandHandler<Se
                 return Task.FromResult<SendPlayerDataResponse?>(null);
             }
 
+            if (!playerData.InitiallyConnected)
+            {
+                playerData.RegisterFirstConnection();
+            }
+
             playerData.UnsetDisconnectedDate();
 
             var executedShots = GetExecutedShots(opponentShips, playerData.ExecutedShots);

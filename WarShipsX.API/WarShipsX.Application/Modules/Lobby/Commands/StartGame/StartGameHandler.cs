@@ -3,12 +3,11 @@ using WarShipsX.Application.Modules.Game;
 
 namespace WarShipsX.Application.Modules.Lobby.Commands.StartGame;
 
-public class StartGameHandler(LobbyService lobby, GameService game, TimeProvider time) : ICommandHandler<StartGameCommand, StartGameResponse?>
+public class StartGameHandler(LobbyService lobby, GameService game) : ICommandHandler<StartGameCommand, StartGameResponse?>
 {
     private readonly LobbyService _lobby = lobby;
     private readonly GameService _game = game;
     private readonly Lock _lock = new();
-    private readonly TimeProvider _time = time;
 
     public Task<StartGameResponse?> ExecuteAsync(StartGameCommand command, CancellationToken ct)
     {
@@ -30,12 +29,14 @@ public class StartGameHandler(LobbyService lobby, GameService game, TimeProvider
             }
 
             var opponent = users[Random.Shared.Next(0, users.Count)];
-            opponent.SetDisconnectedDate(_time.GetUtcNow().LocalDateTime);
 
-            var player = new PlayerData(command.Id, command.Ships);
-            player.SetDisconnectedDate(_time.GetUtcNow().LocalDateTime);
+            PlayerData opponentData = new(opponent.Id, opponent.Ships);
+            PlayerData playerData = new(command.Id, command.Ships);
 
-            _game.CreateNewGame(player, opponent);
+            _game.CreateNewGame(playerData, opponentData);
+
+            _lobby.RemovePlayerFromQueue(opponent.Id);
+            _lobby.RemovePlayerFromQueue(command.Id);
 
             return Task.FromResult<StartGameResponse?>(new(command.Id, opponent.Id));
         }

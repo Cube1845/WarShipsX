@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using WarShipsX.Application.Common.Models;
-using WarShipsX.Application.Modules.Common.Services;
 using WarShipsX.Application.Modules.Game.Commands.SendPlayerData;
 using WarShipsX.Application.Modules.Game.Commands.UserDisconnected;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
@@ -58,7 +57,7 @@ public class GameHub(GameService game, ConnectionService reconnectionService) : 
         await _reconnectionService.RegisterDisconnection(userId,
             async () =>
             {
-                await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentReconnected");
+                await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentConnected");
             },
             async () =>
             {

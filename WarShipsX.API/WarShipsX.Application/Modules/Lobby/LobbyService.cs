@@ -1,13 +1,14 @@
 ﻿using WarShipsX.Application.Modules.Common.Models;
+using WarShipsX.Application.Modules.Lobby.Models;
 
 namespace WarShipsX.Application.Modules.Lobby;
 
 public class LobbyService
 {
-    private readonly List<PlayerData> _connectedPlayers = [];
+    private readonly List<PlayerDto> _connectedPlayers = [];
     private readonly Lock _lock = new();
 
-    public List<PlayerData> GetPlayers()
+    public List<PlayerDto> GetPlayers()
     {
         lock (_lock)
         {
@@ -23,7 +24,7 @@ public class LobbyService
         }
     }
 
-    public void AddPlayerToQueue(PlayerData data)
+    public void AddPlayerToQueue(PlayerDto data)
     {
         lock (_lock)
         {
