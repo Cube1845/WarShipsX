@@ -13,6 +13,7 @@ import { SettingShipsService } from '../../services/setting-ships.service';
 import { Position } from '../../models/position';
 import { ToastService } from '../../../common/services/toast.service';
 import { LobbyService } from '../../services/lobby.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-game-start',
@@ -24,6 +25,7 @@ export class GameStartComponent implements OnInit, OnDestroy {
   private readonly settingShipsService = inject(SettingShipsService);
   private readonly toastService = inject(ToastService);
   private readonly lobbyService = inject(LobbyService);
+  private readonly router = inject(Router);
 
   readonly maxFourShips: number = 1;
   readonly maxThreeShips: number = 2;
@@ -75,6 +77,12 @@ export class GameStartComponent implements OnInit, OnDestroy {
   constructor() {
     this.lobbyService.playersCountChanged$.subscribe((playersCount) =>
       this.playersWaitingCount.set(playersCount)
+    );
+
+    this.lobbyService.startGame$.subscribe(() =>
+      this.lobbyService
+        .disconnect()
+        .subscribe(() => this.router.navigateByUrl('home/game'))
     );
   }
 

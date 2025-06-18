@@ -2,7 +2,6 @@
 using WarShipsX.Application.Common.Models;
 using WarShipsX.Application.Modules.Game.Commands.SendPlayerData;
 using WarShipsX.Application.Modules.Game.Commands.UserDisconnected;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace WarShipsX.Application.Modules.Game;
 

@@ -1,4 +1,5 @@
 ﻿using WarShipsX.Application.Modules.Common.Models;
+using WarShipsX.Application.Modules.Game.Models;
 
 namespace WarShipsX.Application.Modules.Game.Commands.SendPlayerData;
 
@@ -34,7 +35,7 @@ public class SendPlayerDataHandler(GameService gameService) : ICommandHandler<Se
             playerData.UnsetDisconnectedDate();
 
             var executedShots = GetExecutedShots(opponentShips, playerData.ExecutedShots);
-            return Task.FromResult<SendPlayerDataResponse?>(new(playerData.Ships, executedShots));
+            return Task.FromResult<SendPlayerDataResponse?>(new(playerData.Ships, executedShots, IsPlayersTurn(game, playerData.Id)));
         }
     }
 
@@ -72,5 +73,15 @@ public class SendPlayerDataHandler(GameService gameService) : ICommandHandler<Se
         }
 
         return sunkenShipPositions;
+    }
+
+    private bool IsPlayersTurn(Models.Game game, Guid playerId)
+    {
+        if (game.Player1.Id == playerId)
+        {
+            return game.Turn == Turn.Player1;
+        }
+
+        return game.Turn == Turn.Player2;
     }
 }

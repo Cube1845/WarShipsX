@@ -38,6 +38,10 @@ export abstract class HubService {
       : from(this.hubConnection!.invoke(message));
   }
 
+  protected registerEvent(message: string, fn: (data?: any) => void): void {
+    this.hubConnection!.on(message, fn);
+  }
+
   disconnect(): Observable<void> {
     if (this.hubConnection) {
       return from(this.hubConnection.stop());
