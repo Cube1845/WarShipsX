@@ -14,6 +14,10 @@ export class WsxDialogService {
 
   private ref: DynamicDialogRef | undefined;
 
+  closeDialog(): void {
+    this.ref?.close();
+  }
+
   displayDialog<S, T>(
     type: Type<S>,
     header: string,

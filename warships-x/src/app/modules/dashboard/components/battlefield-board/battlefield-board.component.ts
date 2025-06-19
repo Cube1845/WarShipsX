@@ -1,4 +1,11 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  input,
+  InputSignal,
+  output,
+  signal,
+} from '@angular/core';
 import { Position } from '../../models/position';
 
 @Component({
@@ -17,22 +24,13 @@ export class BattlefieldBoardComponent {
 
   highlightedPositions = input<Position[]>([]);
   secondlyHighlightedPositions = input<Position[]>([]);
+  xPositions = input<Position[]>([]);
 
   selectedPosition = input<Position>();
 
-  highlightedPositionInclude(pos: Position) {
+  positionsInclude(inputArray: InputSignal<Position[]>, pos: Position) {
     return computed(() =>
-      this.highlightedPositions().some(
-        (x) => x.letter == pos.letter && x.number == pos.number
-      )
-    );
-  }
-
-  secondlyHighlightedPositionInclude(pos: Position) {
-    return computed(() =>
-      this.secondlyHighlightedPositions().some(
-        (x) => x.letter == pos.letter && x.number == pos.number
-      )
+      inputArray().some((x) => x.letter == pos.letter && x.number == pos.number)
     );
   }
 

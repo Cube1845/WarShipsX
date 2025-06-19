@@ -1,7 +1,6 @@
 import {
   Component,
   computed,
-  effect,
   inject,
   OnDestroy,
   OnInit,
@@ -14,6 +13,7 @@ import { Position } from '../../models/position';
 import { ToastService } from '../../../common/services/toast.service';
 import { LobbyService } from '../../services/lobby.service';
 import { Router } from '@angular/router';
+import { AuthDataService } from '../../../auth/services/auth-data.service';
 
 @Component({
   selector: 'app-game-start',
@@ -26,6 +26,7 @@ export class GameStartComponent implements OnInit, OnDestroy {
   private readonly toastService = inject(ToastService);
   private readonly lobbyService = inject(LobbyService);
   private readonly router = inject(Router);
+  private readonly authDataService = inject(AuthDataService);
 
   readonly maxFourShips: number = 1;
   readonly maxThreeShips: number = 2;
@@ -87,7 +88,9 @@ export class GameStartComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.lobbyService.connect();
+    this.lobbyService
+      .connect()
+      .subscribe({ error: () => this.authDataService.clearAuthData() });
   }
 
   ngOnDestroy(): void {

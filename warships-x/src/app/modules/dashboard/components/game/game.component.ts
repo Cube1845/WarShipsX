@@ -1,10 +1,16 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { BattlefieldBoardComponent } from '../battlefield-board/battlefield-board.component';
 import { WsxDialogService } from '../../../common/services/wsx-dialog.service';
 import { ShootDialogComponent } from '../shoot-dialog/shoot-dialog.component';
 import { Position } from '../../models/position';
 import { GameService } from '../../services/game.service';
 import { ShotState } from '../../models/shot';
+import { Ship } from '../../models/ship';
+import { PlayerData } from '../../models/player-data';
+import { Router } from '@angular/router';
+import { HubConnectionState } from '@microsoft/signalr';
+import { InfoPopupComponent } from '../../../common/components/info-popup/info-popup.component';
+import { ToastService } from '../../../common/services/toast.service';
 
 @Component({
   selector: 'app-game',
@@ -12,9 +18,11 @@ import { ShotState } from '../../models/shot';
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss',
 })
-export class GameComponent {
+export class GameComponent implements OnInit, OnDestroy {
   private readonly dialogService = inject(WsxDialogService);
   private readonly gameService = inject(GameService);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
   currentSelectedTile = signal<Position | undefined>(undefined);
 
@@ -24,30 +32,133 @@ export class GameComponent {
 
   userShips = signal<Position[]>([]);
 
+  opponentShotPositions = signal<Position[]>([]);
+  opponentHitPositions = signal<Position[]>([]);
+
   userTurn = signal<boolean>(false);
 
   constructor() {
-    this.gameService.playerDataSent$.subscribe((data) => {
-      this.userTurn.set(data.playersTurn);
-
-      const flattenedUserShips = data.ships.map((s) => s.positions).flat();
-      this.userShips.set(flattenedUserShips);
-
-      const missedPositions = data.executedShots
-        .filter((s) => s.shotState == ShotState.Missed)
-        .map((s) => s.position);
-      this.missedPositions.set(missedPositions);
-
-      const hitPositions = data.executedShots
-        .filter((s) => s.shotState == ShotState.Hit)
-        .map((s) => s.position);
-      this.hitPositions.set(hitPositions);
-
-      const sunkPositions = data.executedShots
-        .filter((s) => s.shotState == ShotState.Sunk)
-        .map((s) => s.position);
-      this.sunkPositions.set(sunkPositions);
+    this.gameService.connectionClosed$.subscribe(() => {
+      this.router.navigateByUrl('home');
+      this.toastService.error(
+        'There was an error while trying to connect to the game'
+      );
     });
+
+    this.gameService.playerDataSent$.subscribe((data) =>
+      this.setPlayerDataSignals(data)
+    );
+
+    this.gameService.opponentDisconnected$.subscribe(() => {
+      this.openWaitingForOpponentDialog();
+    });
+
+    this.gameService.opponentConnected$.subscribe(() => {
+      this.dialogService.closeDialog();
+    });
+
+    this.gameService.opponentAbandoned$.subscribe(() => {
+      this.router.navigateByUrl('home');
+      this.toastService.error('Your opponent abandoned the game!');
+    });
+  }
+
+  openWaitingForConnectionDialog(): void {
+    this.dialogService.displayDialog(
+      InfoPopupComponent,
+      '',
+      'Waiting for connection...',
+      { closable: false }
+    );
+  }
+
+  openWaitingForOpponentDialog(): void {
+    this.dialogService.displayDialog(
+      InfoPopupComponent,
+      '',
+      'Opponent disconnected, waiting...',
+      { closable: false }
+    );
+  }
+
+  ngOnInit(): void {
+    var connected = false;
+
+    setTimeout(() => {
+      if (!connected) {
+        this.openWaitingForConnectionDialog();
+      }
+    }, 1000);
+
+    this.gameService.connect().subscribe({
+      next: () => {
+        this.dialogService.closeDialog();
+        connected = true;
+      },
+      error: () => {
+        this.dialogService.closeDialog();
+        this.router.navigateByUrl('home');
+        this.toastService.error(
+          'There was an error while trying to connect to the game'
+        );
+        connected = true;
+      },
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.gameService.disconnect();
+  }
+
+  private setPlayerDataSignals(data: PlayerData) {
+    this.userTurn.set(data.playersTurn);
+
+    const flattenedUserShips = data.ships.map((s) => s.positions).flat();
+    this.userShips.set(flattenedUserShips);
+
+    const missedPositions = data.executedShots
+      .filter((s) => s.shotState == ShotState.Missed)
+      .map((s) => s.position);
+    this.missedPositions.set(missedPositions);
+
+    const hitPositions = data.executedShots
+      .filter((s) => s.shotState == ShotState.Hit)
+      .map((s) => s.position);
+    this.hitPositions.set(hitPositions);
+
+    const sunkPositions = data.executedShots
+      .filter((s) => s.shotState == ShotState.Sunk)
+      .map((s) => s.position);
+    this.sunkPositions.set(sunkPositions);
+
+    const opponentHitPositions = this.getOpponentHitPositions(
+      data.ships,
+      data.opponentShots
+    );
+
+    this.opponentHitPositions.set(opponentHitPositions);
+    this.opponentShotPositions.set(data.opponentShots);
+  }
+
+  private getOpponentHitPositions(
+    playerShips: Ship[],
+    opponentShots: Position[]
+  ): Position[] {
+    const flattenedUserShips = playerShips.map((s) => s.positions).flat();
+
+    const hitPositions: Position[] = [];
+
+    opponentShots.forEach((s) => {
+      if (
+        flattenedUserShips.some(
+          (x) => s.letter == x.letter && s.number == x.number
+        )
+      ) {
+        hitPositions.push(s);
+      }
+    });
+
+    return hitPositions;
   }
 
   fieldClicked(position: Position): void {

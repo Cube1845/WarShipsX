@@ -20,9 +20,9 @@ public class SendPlayerDataHandler(GameService gameService) : ICommandHandler<Se
             }
 
             var playerData = game.GetPlayerData(command.UserId);
-            var opponentShips = game.GetOpponentData(command.UserId)?.Ships;
+            var opponentData = game.GetOpponentData(command.UserId);
 
-            if (playerData == null || opponentShips == null)
+            if (playerData == null || opponentData == null)
             {
                 return Task.FromResult<SendPlayerDataResponse?>(null);
             }
@@ -34,8 +34,9 @@ public class SendPlayerDataHandler(GameService gameService) : ICommandHandler<Se
 
             playerData.UnsetDisconnectedDate();
 
-            var executedShots = GetExecutedShots(opponentShips, playerData.ExecutedShots);
-            return Task.FromResult<SendPlayerDataResponse?>(new(playerData.Ships, executedShots, IsPlayersTurn(game, playerData.Id)));
+            var executedShots = GetExecutedShots(opponentData.Ships, playerData.ExecutedShots);
+
+            return Task.FromResult<SendPlayerDataResponse?>(new(playerData.Ships, executedShots, opponentData.ExecutedShots, IsPlayersTurn(game, playerData.Id)));
         }
     }
 

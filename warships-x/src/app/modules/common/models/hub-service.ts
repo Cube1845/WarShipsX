@@ -8,7 +8,7 @@ export abstract class HubService {
   private readonly authDataService = inject(AuthDataService);
   private readonly apiUrl = environment.apiUrl;
 
-  protected hubConnection?: HubConnection;
+  hubConnection?: HubConnection;
 
   constructor(
     private hubUrl: string,
