@@ -1,14 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using WarShipsX.Application.Common.Models;
+using WarShipsX.Application.Modules.Common.Models;
 using WarShipsX.Application.Modules.Game.Commands.SendPlayerData;
+using WarShipsX.Application.Modules.Game.Commands.Shoot;
+using WarShipsX.Application.Modules.Game.Commands.UserConnected;
 using WarShipsX.Application.Modules.Game.Commands.UserDisconnected;
 
 namespace WarShipsX.Application.Modules.Game;
 
 [Authorize]
-public class GameHub(GameService game, ConnectionService reconnectionService) : AuthorizedHub
+public class GameHub(ConnectionService reconnectionService) : AuthorizedHub
 {
-    private readonly GameService _game = game;
     private readonly ConnectionService _reconnectionService = reconnectionService;
 
     public override async Task OnConnectedAsync()
@@ -17,7 +19,12 @@ public class GameHub(GameService game, ConnectionService reconnectionService) : 
 
         var userId = GetUserId();
 
-        var data = await new SendPlayerDataCommand(userId).ExecuteAsync();
+        var data = await new UserConnectedCommand(userId).ExecuteAsync();
+
+        if (_reconnectionService._playerDisconnections.TryGetValue(userId, out var cts))
+        {
+            cts.Cancel();
+        }
 
         if (data == null)
         {
@@ -26,13 +33,6 @@ public class GameHub(GameService game, ConnectionService reconnectionService) : 
         }
 
         await Clients.User(userId.ToString()).SendAsync("PlayerDataSent", data);
-
-        if (_reconnectionService._playerDisconnections.TryGetValue(userId, out var cts))
-        {
-            cts.Cancel();
-        }
-
-        var opponentData = _game.GetGame(userId)!.GetOpponentData(userId)!;
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -63,5 +63,26 @@ public class GameHub(GameService game, ConnectionService reconnectionService) : 
                 await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentAbandoned");
             }
         );
+    }
+
+    public async Task Shoot(Position position)
+    {
+        var userId = GetUserId();
+
+        var data = await new ShootCommand(userId, position).ExecuteAsync();
+
+        if (data == null)
+        {
+            Context.Abort();
+            return;
+        }
+
+        if (data.GameEnded)
+        {
+            //here implementation
+        }
+
+        await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentShot", position);
+        await Clients.User(data.OpponentId.ToString()).SendAsync("ShotFeedback", data.ShotState);
     }
 }

@@ -85,6 +85,10 @@ export class GameStartComponent implements OnInit, OnDestroy {
         .disconnect()
         .subscribe(() => this.router.navigateByUrl('home/game'))
     );
+
+    this.lobbyService.playerParticipates$.subscribe(() =>
+      this.router.navigateByUrl('home/game')
+    );
   }
 
   ngOnInit(): void {

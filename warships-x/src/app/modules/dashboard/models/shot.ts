@@ -1,12 +1,7 @@
 import { Position } from './position';
+import { ShotState } from './shot-state';
 
 export type Shot = {
   position: Position;
   shotState: ShotState;
 };
-
-export enum ShotState {
-  Missed = 1,
-  Hit = 2,
-  Sunk = 3,
-}

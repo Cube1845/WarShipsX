@@ -1,18 +1,29 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using WarShipsX.Application.Common.Models;
 using WarShipsX.Application.Modules.Common.Models;
+using WarShipsX.Application.Modules.Game;
 using WarShipsX.Application.Modules.Lobby.Commands.StartGame;
 
 namespace WarShipsX.Application.Modules.Lobby;
 
 [Authorize]
-public class LobbyHub(LobbyService lobby) : AuthorizedHub
+public class LobbyHub(LobbyService lobby, GameService game) : AuthorizedHub
 {
     private readonly LobbyService _lobby = lobby;
+    private readonly GameService _game = game;
 
     public override async Task OnConnectedAsync()
     {
         await base.OnConnectedAsync();
+
+        if (_game.GetGame(GetUserId()) != null)
+        {
+            await Clients.User(GetUserId().ToString()).SendAsync("PlayerParticipatesInGame", _lobby.GetConnectedPlayersCount());
+
+            Context.Abort();
+
+            return;
+        }
 
         await Clients.User(GetUserId().ToString()).SendAsync("PlayersCountChanged", _lobby.GetConnectedPlayersCount());
 

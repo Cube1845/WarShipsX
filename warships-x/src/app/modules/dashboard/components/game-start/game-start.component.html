@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    <battlefield-board (onTileClick)="fieldClick($event)" [highlightedPositions]="allShips()" />
+    <battlefield-board (onTileClick)="fieldClick($event)" [highlightedPositions]="allShips()" [hoverable]="editState()" />
 
     @if (editState()) {
         <div class="cancel-button-absolute z-3 absolute py-4 px-5 border-round-lg">

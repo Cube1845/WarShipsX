@@ -4,13 +4,12 @@ import { WsxDialogService } from '../../../common/services/wsx-dialog.service';
 import { ShootDialogComponent } from '../shoot-dialog/shoot-dialog.component';
 import { Position } from '../../models/position';
 import { GameService } from '../../services/game.service';
-import { ShotState } from '../../models/shot';
 import { Ship } from '../../models/ship';
 import { PlayerData } from '../../models/player-data';
 import { Router } from '@angular/router';
-import { HubConnectionState } from '@microsoft/signalr';
 import { InfoPopupComponent } from '../../../common/components/info-popup/info-popup.component';
 import { ToastService } from '../../../common/services/toast.service';
+import { ShotState } from '../../models/shot-state';
 
 @Component({
   selector: 'app-game',
@@ -39,10 +38,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   constructor() {
     this.gameService.connectionClosed$.subscribe(() => {
-      this.router.navigateByUrl('home');
-      this.toastService.error(
-        'There was an error while trying to connect to the game'
-      );
+      // this.router.navigateByUrl('home');
     });
 
     this.gameService.playerDataSent$.subscribe((data) =>
@@ -60,6 +56,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.gameService.opponentAbandoned$.subscribe(() => {
       this.router.navigateByUrl('home');
       this.toastService.error('Your opponent abandoned the game!');
+      this.dialogService.closeDialog();
     });
   }
 
@@ -67,8 +64,8 @@ export class GameComponent implements OnInit, OnDestroy {
     this.dialogService.displayDialog(
       InfoPopupComponent,
       '',
-      'Waiting for connection...',
-      { closable: false }
+      { text: 'Waiting for connection...' },
+      { closable: false, showHeader: false }
     );
   }
 
@@ -76,8 +73,8 @@ export class GameComponent implements OnInit, OnDestroy {
     this.dialogService.displayDialog(
       InfoPopupComponent,
       '',
-      'Opponent disconnected, waiting...',
-      { closable: false }
+      { text: 'Opponent disconnected, waiting...' },
+      { closable: false, showHeader: false }
     );
   }
 
@@ -163,6 +160,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   fieldClicked(position: Position): void {
     if (
+      !this.userTurn() ||
       this.hitPositions().some(
         (x) => x.letter == position.letter && x.number == position.number
       ) ||
