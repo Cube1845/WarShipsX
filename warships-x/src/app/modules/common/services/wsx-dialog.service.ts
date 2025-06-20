@@ -43,12 +43,18 @@ export class WsxDialogService {
 
   displayConfirmation(
     header: string,
+    message: string,
     additionalConfirmation?: Confirmation
   ): Observable<void> {
     const acceptSubject = new Subject<void>();
 
     const config: Confirmation = {
       header: header,
+      message: message,
+      acceptButtonStyleClass: 'p-button-primary p-button-outlined',
+      rejectButtonStyleClass: 'p-button-secondary p-button-outlined',
+      acceptLabel: 'Yes',
+      rejectLabel: 'No',
       accept: () => {
         acceptSubject.next();
       },

@@ -19,7 +19,7 @@
             (onTileClick)="fieldClicked($event)"
             [hoverable]="userTurn()"
             [selectedPosition]="currentSelectedTile()"
-            [highlightedPositions]="hitPositions()"
+            [highlightedPositions]="hitPositions().concat(sunkPositions())"
             [secondlyHighlightedPositions]="missedPositions()"
             [xPositions]="sunkPositions()"
         />

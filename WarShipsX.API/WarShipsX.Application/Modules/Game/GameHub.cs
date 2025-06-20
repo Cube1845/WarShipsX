@@ -1,17 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using WarShipsX.Application.Common.Models;
 using WarShipsX.Application.Modules.Common.Models;
-using WarShipsX.Application.Modules.Game.Commands.AbandonGame;
+using WarShipsX.Application.Modules.Game.Commands.SendPlayerData;
 using WarShipsX.Application.Modules.Game.Commands.Shoot;
 using WarShipsX.Application.Modules.Game.Commands.UserConnected;
 using WarShipsX.Application.Modules.Game.Commands.UserDisconnected;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WarShipsX.Application.Modules.Game;
 
 [Authorize]
-public class GameHub(ConnectionService reconnectionService, GameService game) : AuthorizedHub
+public class GameHub(ConnectionService connectionService, GameService game) : AuthorizedHub
 {
-    private readonly ConnectionService _reconnectionService = reconnectionService;
+    private readonly ConnectionService _connectionService = connectionService;
     private readonly GameService _game = game;
 
     public override async Task OnConnectedAsync()
@@ -22,11 +23,6 @@ public class GameHub(ConnectionService reconnectionService, GameService game) : 
 
         var data = await new UserConnectedCommand(userId).ExecuteAsync();
 
-        if (_reconnectionService._playerDisconnections.TryGetValue(userId, out var cts))
-        {
-            cts.Cancel();
-        }
-
         if (data == null)
         {
             Context.Abort();
@@ -34,6 +30,13 @@ public class GameHub(ConnectionService reconnectionService, GameService game) : 
         }
 
         await Clients.User(userId.ToString()).SendAsync("PlayerDataSent", data);
+
+        var opponentData = _game.GetGame(userId)!.GetOpponentData(userId)!;
+
+        if (_connectionService._playerDisconnections.TryGetValue(opponentData.Id, out _) || !opponentData.InitiallyConnected)
+        {
+            await Clients.User(userId.ToString()).SendAsync("WaitForOpponent");
+        }
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -51,10 +54,10 @@ public class GameHub(ConnectionService reconnectionService, GameService game) : 
 
         if (!data.OpponentAlsoDisconnected)
         {
-            await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentDisconnected");
+            await Clients.User(data.OpponentId.ToString()).SendAsync("WaitForOpponent");
         }
 
-        await _reconnectionService.RegisterDisconnection(userId,
+        await _connectionService.RegisterDisconnection(userId,
             async () =>
             {
                 await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentConnected");
@@ -69,18 +72,20 @@ public class GameHub(ConnectionService reconnectionService, GameService game) : 
 
     public async Task AbandonGame()
     {
-        var data = await new AbandonGameCommand(GetUserId()).ExecuteAsync();
+        AuthorizeUser();
 
-        if (data == null)
-        {
-            return;
-        }
+        var userId = GetUserId();
 
-        await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentAbandoned");
+        await Clients.User(_game.GetGame(userId)?.GetOpponentData(userId)?.Id.ToString()!).SendAsync("OpponentAbandoned");
+        _game.RemoveGame(userId);
+
+        Context.Abort();
     }
 
     public async Task Shoot(Position position)
     {
+        AuthorizeUser();
+
         var userId = GetUserId();
 
         var data = await new ShootCommand(userId, position).ExecuteAsync();
@@ -97,6 +102,6 @@ public class GameHub(ConnectionService reconnectionService, GameService game) : 
         }
 
         await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentShot", position);
-        await Clients.User(data.OpponentId.ToString()).SendAsync("ShotFeedback", data.ShotState);
+        await Clients.User(userId.ToString()).SendAsync("ShotFeedback", new Shot(position, data.ShotState));
     }
 }

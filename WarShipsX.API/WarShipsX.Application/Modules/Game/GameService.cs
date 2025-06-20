@@ -55,20 +55,26 @@ public class GameService(AwaitableTaskService taskService, IHubContext<GameHub> 
     {
         CancellationTokenSource cts = new();
 
-        game.Player1.SetOnInitialConnectionFn(() =>
+        game.Player1.SetOnInitialConnectionFn(async () =>
         {
             if (game.Player2.InitiallyConnected)
             {
                 cts.Cancel();
+                return;
             }
+
+            await _gameHubContext.Clients.User(game.Player1.Id.ToString()).SendAsync("WaitForOpponent");
         });
 
-        game.Player2.SetOnInitialConnectionFn(() =>
+        game.Player2.SetOnInitialConnectionFn(async () =>
         {
             if (game.Player1.InitiallyConnected)
             {
                 cts.Cancel();
+                return;
             }
+
+            await _gameHubContext.Clients.User(game.Player2.Id.ToString()).SendAsync("WaitForOpponent");
         });
 
         Action timePassedFn = async () =>

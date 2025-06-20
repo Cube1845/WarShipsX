@@ -29,8 +29,8 @@ export class ShootDialogComponent implements OnInit {
 
   shoot(): void {
     this.ref.close({
-      letter: this.letter,
-      number: this.number,
+      letter: this.letter(),
+      number: this.number(),
     });
   }
 }

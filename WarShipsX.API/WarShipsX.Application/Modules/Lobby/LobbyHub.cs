@@ -32,6 +32,8 @@ public class LobbyHub(LobbyService lobby, GameService game) : AuthorizedHub
 
     public async Task JoinLobby(List<Ship> ships)
     {
+        AuthorizeUser();
+
         var userId = GetUserId();
 
         _lobby.AddPlayerToQueue(new(userId, ships));
@@ -49,6 +51,8 @@ public class LobbyHub(LobbyService lobby, GameService game) : AuthorizedHub
 
     public async Task LeaveLobby()
     {
+        AuthorizeUser();
+
         _lobby.RemovePlayerFromQueue(GetUserId());
         await SendPlayersCount();
     }
@@ -65,6 +69,7 @@ public class LobbyHub(LobbyService lobby, GameService game) : AuthorizedHub
 
     private async Task SendPlayersCount()
     {
+        AuthorizeUser();
         await Clients.All.SendAsync("PlayersCountChanged", _lobby.GetConnectedPlayersCount());
     }
 }

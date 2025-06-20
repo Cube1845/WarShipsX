@@ -9,23 +9,36 @@ export class ToastService {
   private toastSubject = new Subject<ToastMessageOptions>();
   onToast$ = this.toastSubject.asObservable();
 
-  success(message: string, lifetime?: number): void {
+  private readonly defaultLifetime = 3500;
+
+  success(message: string, header?: string, lifetime?: number): void {
     const options: ToastMessageOptions = {
       severity: 'success',
-      summary: 'Success',
+      summary: header || 'Success',
       detail: message,
-      life: lifetime || 3500,
+      life: lifetime || this.defaultLifetime,
     };
 
     this.toastSubject.next(options);
   }
 
-  error(message: string, lifetime?: number): void {
+  error(message: string, header?: string, lifetime?: number): void {
     const options: ToastMessageOptions = {
       severity: 'error',
-      summary: 'Error',
+      summary: header || 'Error',
       detail: message,
-      life: lifetime || 3500,
+      life: lifetime || this.defaultLifetime,
+    };
+
+    this.toastSubject.next(options);
+  }
+
+  info(message: string, header?: string, lifetime?: number): void {
+    const options: ToastMessageOptions = {
+      severity: 'secondary',
+      summary: header || 'Info',
+      detail: message,
+      life: lifetime || this.defaultLifetime,
     };
 
     this.toastSubject.next(options);

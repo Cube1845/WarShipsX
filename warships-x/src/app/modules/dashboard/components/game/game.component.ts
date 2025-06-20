@@ -37,6 +37,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
   userTurn = signal<boolean>(false);
 
+  waitingForOpponent = false;
+
   constructor() {
     this.gameService.connectionClosed$.subscribe(() => {
       // this.router.navigateByUrl('home');
@@ -46,27 +48,149 @@ export class GameComponent implements OnInit, OnDestroy {
       this.setPlayerDataSignals(data)
     );
 
-    this.gameService.opponentDisconnected$.subscribe(() => {
-      this.openWaitingForOpponentDialog();
+    this.gameService.waitForOpponent$.subscribe(() => {
+      this.waitingForOpponent = true;
+
+      setTimeout(() => {
+        if (this.waitingForOpponent) {
+          this.openWaitingForOpponentDialog();
+        }
+      }, 2000);
     });
 
     this.gameService.opponentConnected$.subscribe(() => {
+      this.waitingForOpponent = false;
       this.dialogService.closeDialog();
     });
 
     this.gameService.opponentAbandoned$.subscribe(() => {
       this.router.navigateByUrl('home');
-      this.toastService.error('Your opponent abandoned the game!');
+      this.toastService.success('Your opponent abandoned the game!');
       this.dialogService.closeDialog();
     });
+
+    this.gameService.opponentShot$.subscribe((position) => {
+      this.opponentShotPositions.update((currentPositions) => [
+        ...currentPositions,
+        position,
+      ]);
+
+      this.opponentHitPositions.set([
+        ...this.getOpponentHitPositions(
+          this.userShips(),
+          this.opponentShotPositions()
+        ),
+      ]);
+
+      this.userTurn.set(true);
+    });
+
+    this.gameService.shotFeedback$.subscribe((shot) => {
+      switch (shot.shotState) {
+        case ShotState.Missed:
+          this.missedPositions.update((currentPositions) => [
+            ...currentPositions,
+            shot.position,
+          ]);
+
+          this.toastService.info('You missed', undefined, 2000);
+          break;
+        case ShotState.Hit:
+          this.hitPositions.update((currentPositions) => [
+            ...currentPositions,
+            shot.position,
+          ]);
+
+          this.toastService.success('Hit!', undefined, 2000);
+          break;
+        case ShotState.Sunk:
+          this.addPositionsToSunk(shot.position);
+
+          this.toastService.success('You sank enemy ship!', undefined, 2000);
+          break;
+      }
+
+      this.userTurn.set(false);
+    });
+  }
+
+  private addPositionsToSunk(sunkPosition: Position): void {
+    const sunkPositions: Position[] = [sunkPosition];
+    const hitPositions = this.hitPositions();
+    const alphaNumChars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+
+    let previousPosition: Position | null = null;
+    let currentPosition: Position = sunkPosition;
+
+    while (true) {
+      const neighbors = this.getAdjacentPositions(
+        currentPosition,
+        alphaNumChars
+      );
+      const next = neighbors.find((pos) => {
+        if (
+          previousPosition &&
+          pos.letter === previousPosition.letter &&
+          pos.number === previousPosition.number
+        ) {
+          return false;
+        }
+        return hitPositions.some(
+          (p) => p.letter === pos.letter && p.number === pos.number
+        );
+      });
+
+      if (!next) {
+        break;
+      }
+
+      sunkPositions.push(next);
+      previousPosition = currentPosition;
+      currentPosition = next;
+    }
+
+    this.sunkPositions.update((current) => [...current, ...sunkPositions]);
+  }
+
+  private getAdjacentPositions(
+    pos: Position,
+    alphaNumChars: string[]
+  ): Position[] {
+    const positions: Position[] = [];
+    const letterIndex = alphaNumChars.indexOf(pos.letter);
+
+    if (letterIndex > 0) {
+      positions.push({
+        letter: alphaNumChars[letterIndex - 1],
+        number: pos.number,
+      });
+    }
+    if (letterIndex < alphaNumChars.length - 1) {
+      positions.push({
+        letter: alphaNumChars[letterIndex + 1],
+        number: pos.number,
+      });
+    }
+    if (pos.number > 1) {
+      positions.push({ letter: pos.letter, number: pos.number - 1 });
+    }
+    if (pos.number < 10) {
+      positions.push({ letter: pos.letter, number: pos.number + 1 });
+    }
+
+    return positions;
   }
 
   abandonGame(): void {
     this.dialogService
-      .displayConfirmation('Are you sure?', {
-        rejectLabel: 'Stay',
-        acceptLabel: 'Leave',
-      })
+      .displayConfirmation(
+        'Are you sure?',
+        'Do you want to abandon the game?',
+        {
+          rejectLabel: 'Stay',
+          acceptLabel: 'Leave',
+        }
+      )
       .subscribe(() => {
         this.gameService.abandonGame();
         this.router.navigateByUrl('home');
@@ -86,7 +210,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.dialogService.displayDialog(
       InfoPopupComponent,
       '',
-      { text: 'Opponent disconnected, waiting...' },
+      { text: 'Waiting for opponent...' },
       { closable: false, showHeader: false }
     );
   }
@@ -103,14 +227,18 @@ export class GameComponent implements OnInit, OnDestroy {
     this.gameService.connect().subscribe({
       next: () => {
         this.dialogService.closeDialog();
+
         connected = true;
       },
       error: () => {
         this.dialogService.closeDialog();
+
         this.router.navigateByUrl('home');
+
         this.toastService.error(
           'There was an error while trying to connect to the game'
         );
+
         connected = true;
       },
     });
@@ -142,7 +270,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.sunkPositions.set(sunkPositions);
 
     const opponentHitPositions = this.getOpponentHitPositions(
-      data.ships,
+      data.ships.map((s) => s.positions).flat(),
       data.opponentShots
     );
 
@@ -151,11 +279,9 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   private getOpponentHitPositions(
-    playerShips: Ship[],
+    flattenedUserShips: Position[],
     opponentShots: Position[]
   ): Position[] {
-    const flattenedUserShips = playerShips.map((s) => s.positions).flat();
-
     const hitPositions: Position[] = [];
 
     opponentShots.forEach((s) => {
@@ -194,8 +320,12 @@ export class GameComponent implements OnInit, OnDestroy {
         position: 'top',
       })
       .subscribe({
-        next: () => {
+        next: (position: any) => {
           this.currentSelectedTile.set(undefined);
+
+          if (position) {
+            this.gameService.shoot(position);
+          }
         },
       });
   }

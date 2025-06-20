@@ -10,21 +10,21 @@ export class LobbyService extends HubService {
   private playersCountChangedSubject = new Subject<number>();
   playersCountChanged$ = this.playersCountChangedSubject.asObservable();
 
-  private startGameSubject = new Subject<boolean>();
+  private startGameSubject = new Subject<void>();
   startGame$ = this.startGameSubject.asObservable();
 
-  private playerParticipatesSubject = new Subject<boolean>();
+  private playerParticipatesSubject = new Subject<void>();
   playerParticipates$ = this.playerParticipatesSubject.asObservable();
 
   private registerEvents(): void {
-    this.registerEvent('StartGame', () => this.startGameSubject.next(true));
+    this.registerEvent('StartGame', () => this.startGameSubject.next());
 
     this.registerEvent('PlayersCountChanged', (count: number) => {
       this.playersCountChangedSubject.next(count);
     });
 
     this.registerEvent('PlayerParticipatesInGame', () => {
-      this.playerParticipatesSubject.next(true);
+      this.playerParticipatesSubject.next();
     });
   }
 

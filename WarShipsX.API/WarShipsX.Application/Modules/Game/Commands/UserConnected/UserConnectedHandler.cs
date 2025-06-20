@@ -4,10 +4,12 @@ using WarShipsX.Application.Modules.Game.Models;
 
 namespace WarShipsX.Application.Modules.Game.Commands.UserConnected;
 
-public class UserConnectedHandler(GameService gameService) : ICommandHandler<UserConnectedCommand, UserConnectedResponse?>
+public class UserConnectedHandler(GameService gameService, IHubContext<GameHub> gameHubContext, ConnectionService connectionService) : ICommandHandler<UserConnectedCommand, UserConnectedResponse?>
 {
     private readonly GameService _game = gameService;
     private readonly Lock _lock = new();
+    private readonly IHubContext<GameHub> _gameHubContext = gameHubContext;
+    private readonly ConnectionService _connectionService = connectionService;
 
     public Task<UserConnectedResponse?> ExecuteAsync(UserConnectedCommand command, CancellationToken ct)
     {
@@ -36,6 +38,11 @@ public class UserConnectedHandler(GameService gameService) : ICommandHandler<Use
             playerData.UnsetDisconnectedDate();
 
             var executedShots = GetExecutedShots(opponentData.Ships, playerData.ExecutedShots);
+
+            if (_connectionService._playerDisconnections.TryRemove(command.UserId, out var cts))
+            {
+                cts.Cancel();
+            }
 
             return Task.FromResult<UserConnectedResponse?>(new(playerData.Ships, executedShots, opponentData.ExecutedShots, IsPlayersTurn(game, playerData.Id)));
         }
