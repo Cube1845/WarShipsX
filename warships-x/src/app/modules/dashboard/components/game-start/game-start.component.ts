@@ -81,9 +81,9 @@ export class GameStartComponent implements OnInit, OnDestroy {
     );
 
     this.lobbyService.startGame$.subscribe(() =>
-      this.lobbyService
-        .disconnect()
-        .subscribe(() => this.router.navigateByUrl('home/game'))
+      this.lobbyService.disconnect().subscribe(() => {
+        this.router.navigateByUrl('home/game');
+      })
     );
 
     this.lobbyService.playerParticipates$.subscribe(() =>
@@ -92,13 +92,21 @@ export class GameStartComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.lobbyService
-      .connect()
-      .subscribe({ error: () => this.authDataService.clearAuthData() });
+    this.lobbyService.connect().subscribe({
+      error: () => {
+        this.authDataService.clearAuthData();
+        this.router.navigateByUrl('');
+      },
+    });
   }
 
   ngOnDestroy(): void {
     this.lobbyService.disconnect();
+  }
+
+  logOut(): void {
+    this.authDataService.clearAuthData();
+    this.router.navigateByUrl('');
   }
 
   clearShips(): void {

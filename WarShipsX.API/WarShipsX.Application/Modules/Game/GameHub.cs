@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using WarShipsX.Application.Common.Models;
 using WarShipsX.Application.Modules.Common.Models;
-using WarShipsX.Application.Modules.Game.Commands.SendPlayerData;
+using WarShipsX.Application.Modules.Game.Commands.AbandonGame;
 using WarShipsX.Application.Modules.Game.Commands.Shoot;
 using WarShipsX.Application.Modules.Game.Commands.UserConnected;
 using WarShipsX.Application.Modules.Game.Commands.UserDisconnected;
@@ -9,9 +9,10 @@ using WarShipsX.Application.Modules.Game.Commands.UserDisconnected;
 namespace WarShipsX.Application.Modules.Game;
 
 [Authorize]
-public class GameHub(ConnectionService reconnectionService) : AuthorizedHub
+public class GameHub(ConnectionService reconnectionService, GameService game) : AuthorizedHub
 {
     private readonly ConnectionService _reconnectionService = reconnectionService;
+    private readonly GameService _game = game;
 
     public override async Task OnConnectedAsync()
     {
@@ -60,9 +61,22 @@ public class GameHub(ConnectionService reconnectionService) : AuthorizedHub
             },
             async () =>
             {
+                _game.RemoveGame(userId);
                 await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentAbandoned");
             }
         );
+    }
+
+    public async Task AbandonGame()
+    {
+        var data = await new AbandonGameCommand(GetUserId()).ExecuteAsync();
+
+        if (data == null)
+        {
+            return;
+        }
+
+        await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentAbandoned");
     }
 
     public async Task Shoot(Position position)

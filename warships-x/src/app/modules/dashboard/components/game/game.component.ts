@@ -10,10 +10,11 @@ import { Router } from '@angular/router';
 import { InfoPopupComponent } from '../../../common/components/info-popup/info-popup.component';
 import { ToastService } from '../../../common/services/toast.service';
 import { ShotState } from '../../models/shot-state';
+import { WsButtonComponent } from '../../../common/components/ws-button/ws-button.component';
 
 @Component({
   selector: 'app-game',
-  imports: [BattlefieldBoardComponent],
+  imports: [BattlefieldBoardComponent, WsButtonComponent],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss',
 })
@@ -58,6 +59,18 @@ export class GameComponent implements OnInit, OnDestroy {
       this.toastService.error('Your opponent abandoned the game!');
       this.dialogService.closeDialog();
     });
+  }
+
+  abandonGame(): void {
+    this.dialogService
+      .displayConfirmation('Are you sure?', {
+        rejectLabel: 'Stay',
+        acceptLabel: 'Leave',
+      })
+      .subscribe(() => {
+        this.gameService.abandonGame();
+        this.router.navigateByUrl('home');
+      });
   }
 
   openWaitingForConnectionDialog(): void {

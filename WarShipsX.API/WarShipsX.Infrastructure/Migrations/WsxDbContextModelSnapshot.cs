@@ -22,94 +22,6 @@ namespace WarShipsX.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("WarShipsX.Application.Hubs.Models.Entities.Game.Game", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("Player1Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("Player2Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Turn")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Games");
-                });
-
-            modelBuilder.Entity("WarShipsX.Application.Hubs.Models.Entities.Position", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Letter")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Number")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("ShipId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShipId");
-
-                    b.ToTable("Positions");
-                });
-
-            modelBuilder.Entity("WarShipsX.Application.Hubs.Models.Entities.Ship", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("GameId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("OwnerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GameId");
-
-                    b.ToTable("Ships");
-                });
-
-            modelBuilder.Entity("WarShipsX.Application.Hubs.Models.Entities.Shot", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("GameId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Letter")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Number")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("ShooterId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GameId");
-
-                    b.ToTable("Shots");
-                });
-
             modelBuilder.Entity("WarShipsX.Infrastructure.Auth.Entities.AppUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -157,39 +69,6 @@ namespace WarShipsX.Infrastructure.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("WarShipsX.Application.Hubs.Models.Entities.Position", b =>
-                {
-                    b.HasOne("WarShipsX.Application.Hubs.Models.Entities.Ship", "Ship")
-                        .WithMany("Positions")
-                        .HasForeignKey("ShipId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Ship");
-                });
-
-            modelBuilder.Entity("WarShipsX.Application.Hubs.Models.Entities.Ship", b =>
-                {
-                    b.HasOne("WarShipsX.Application.Hubs.Models.Entities.Game.Game", "Game")
-                        .WithMany("Ships")
-                        .HasForeignKey("GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Game");
-                });
-
-            modelBuilder.Entity("WarShipsX.Application.Hubs.Models.Entities.Shot", b =>
-                {
-                    b.HasOne("WarShipsX.Application.Hubs.Models.Entities.Game.Game", "Game")
-                        .WithMany("Shots")
-                        .HasForeignKey("GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Game");
-                });
-
             modelBuilder.Entity("WarShipsX.Infrastructure.Auth.Entities.RefreshToken", b =>
                 {
                     b.HasOne("WarShipsX.Infrastructure.Auth.Entities.AppUser", "Owner")
@@ -199,18 +78,6 @@ namespace WarShipsX.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Owner");
-                });
-
-            modelBuilder.Entity("WarShipsX.Application.Hubs.Models.Entities.Game.Game", b =>
-                {
-                    b.Navigation("Ships");
-
-                    b.Navigation("Shots");
-                });
-
-            modelBuilder.Entity("WarShipsX.Application.Hubs.Models.Entities.Ship", b =>
-                {
-                    b.Navigation("Positions");
                 });
 
             modelBuilder.Entity("WarShipsX.Infrastructure.Auth.Entities.AppUser", b =>

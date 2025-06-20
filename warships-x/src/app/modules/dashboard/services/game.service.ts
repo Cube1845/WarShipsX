@@ -45,4 +45,8 @@ export class GameService extends HubService {
   constructor() {
     super('game-hub', () => this.registerEvents());
   }
+
+  abandonGame(): void {
+    this.invoke('AbandonGame');
+  }
 }
