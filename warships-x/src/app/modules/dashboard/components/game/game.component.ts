@@ -54,6 +54,12 @@ export class GameComponent implements OnInit, OnDestroy {
       setTimeout(() => {
         if (this.waitingForOpponent) {
           this.openWaitingForOpponentDialog();
+
+          setTimeout(() => {
+            if (!this.waitingForOpponent) {
+              this.dialogService.closeDialog();
+            }
+          }, 500);
         }
       }, 2000);
     });
@@ -115,38 +121,40 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   private addPositionsToSunk(sunkPosition: Position): void {
-    const sunkPositions: Position[] = [sunkPosition];
+    const sunkPositions: Position[] = [];
     const hitPositions = this.hitPositions();
     const alphaNumChars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
-    let previousPosition: Position | null = null;
-    let currentPosition: Position = sunkPosition;
+    const stack: Position[] = [sunkPosition];
 
-    while (true) {
-      const neighbors = this.getAdjacentPositions(
-        currentPosition,
-        alphaNumChars
-      );
-      const next = neighbors.find((pos) => {
-        if (
-          previousPosition &&
-          pos.letter === previousPosition.letter &&
-          pos.number === previousPosition.number
-        ) {
-          return false;
-        }
-        return hitPositions.some(
-          (p) => p.letter === pos.letter && p.number === pos.number
-        );
-      });
+    while (stack.length > 0) {
+      const current = stack.pop()!;
 
-      if (!next) {
-        break;
+      if (
+        sunkPositions.some(
+          (p) => p.letter === current.letter && p.number === current.number
+        )
+      ) {
+        continue;
       }
 
-      sunkPositions.push(next);
-      previousPosition = currentPosition;
-      currentPosition = next;
+      sunkPositions.push(current);
+
+      const neighbors = this.getAdjacentPositions(current, alphaNumChars);
+
+      for (const neighbor of neighbors) {
+        const isAlreadySunk = sunkPositions.some(
+          (p) => p.letter === neighbor.letter && p.number === neighbor.number
+        );
+
+        const isHit = hitPositions.some(
+          (p) => p.letter === neighbor.letter && p.number === neighbor.number
+        );
+
+        if (isHit && !isAlreadySunk) {
+          stack.push(neighbor);
+        }
+      }
     }
 
     this.sunkPositions.update((current) => [...current, ...sunkPositions]);

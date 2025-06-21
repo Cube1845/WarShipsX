@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using WarShipsX.Application.Common.Models;
+﻿using WarShipsX.Application.Common.Models;
 using WarShipsX.Application.Modules.Common.Models;
 using WarShipsX.Application.Modules.Common.Services;
 using WarShipsX.Application.Modules.Game.Models;
@@ -55,47 +54,41 @@ public class GameService(AwaitableTaskService taskService, IHubContext<GameHub> 
     {
         CancellationTokenSource cts = new();
 
-        game.Player1.SetOnInitialConnectionFn(async () =>
+        game.Player1.SetOnInitialConnectionFn(() =>
         {
             if (game.Player2.InitiallyConnected)
             {
                 cts.Cancel();
-                return;
             }
-
-            await _gameHubContext.Clients.User(game.Player1.Id.ToString()).SendAsync("WaitForOpponent");
         });
 
-        game.Player2.SetOnInitialConnectionFn(async () =>
+        game.Player2.SetOnInitialConnectionFn(() =>
         {
             if (game.Player1.InitiallyConnected)
             {
                 cts.Cancel();
-                return;
             }
-
-            await _gameHubContext.Clients.User(game.Player2.Id.ToString()).SendAsync("WaitForOpponent");
         });
 
-        Action timePassedFn = async () =>
+        Action timePassedFn = () =>
         {
             _games.Remove(game);
 
             if (game.Player1.InitiallyConnected)
             {
-                await _gameHubContext.Clients.User(game.Player1.Id.ToString()).SendAsync("OpponentAbandoned");
+                _ = _gameHubContext.Clients.User(game.Player1.Id.ToString()).SendAsync("OpponentAbandoned");
             }
 
             if (game.Player2.InitiallyConnected)
             {
-                await _gameHubContext.Clients.User(game.Player2.Id.ToString()).SendAsync("OpponentAbandoned");
+                _ = _gameHubContext.Clients.User(game.Player2.Id.ToString()).SendAsync("OpponentAbandoned");
             }
         };
 
-        Action bothPlayersConnectedFn = async () =>
+        Action bothPlayersConnectedFn = () =>
         {
-            await _gameHubContext.Clients.User(game.Player1.Id.ToString()).SendAsync("OpponentConnected");
-            await _gameHubContext.Clients.User(game.Player2.Id.ToString()).SendAsync("OpponentConnected");
+            _ = _gameHubContext.Clients.User(game.Player1.Id.ToString()).SendAsync("OpponentConnected");
+            _ = _gameHubContext.Clients.User(game.Player2.Id.ToString()).SendAsync("OpponentConnected");
         };
 
         _ = _taskService.AwaitTask(_connectionTime, bothPlayersConnectedFn, timePassedFn, () => {}, cts.Token);

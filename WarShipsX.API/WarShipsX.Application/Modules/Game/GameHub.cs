@@ -5,7 +5,6 @@ using WarShipsX.Application.Modules.Game.Commands.SendPlayerData;
 using WarShipsX.Application.Modules.Game.Commands.Shoot;
 using WarShipsX.Application.Modules.Game.Commands.UserConnected;
 using WarShipsX.Application.Modules.Game.Commands.UserDisconnected;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WarShipsX.Application.Modules.Game;
 
@@ -33,7 +32,7 @@ public class GameHub(ConnectionService connectionService, GameService game) : Au
 
         var opponentData = _game.GetGame(userId)!.GetOpponentData(userId)!;
 
-        if (_connectionService._playerDisconnections.TryGetValue(opponentData.Id, out _) || !opponentData.InitiallyConnected)
+        if (_connectionService._playerDisconnections.TryGetValue(opponentData.Id, out _))
         {
             await Clients.User(userId.ToString()).SendAsync("WaitForOpponent");
         }

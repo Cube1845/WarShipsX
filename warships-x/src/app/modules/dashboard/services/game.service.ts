@@ -9,7 +9,7 @@ import { Shot } from '../models/shot';
   providedIn: 'root',
 })
 export class GameService extends HubService {
-  private connectionClosedSubject = new Subject<boolean>();
+  private connectionClosedSubject = new Subject<void>();
   connectionClosed$ = this.connectionClosedSubject.asObservable();
 
   private playerDataSentSubject = new Subject<PlayerData>();
@@ -31,7 +31,7 @@ export class GameService extends HubService {
   waitForOpponent$ = this.waitForOpponentSubject.asObservable();
 
   private registerEvents(): void {
-    this.hubConnection?.onclose(() => this.connectionClosedSubject.next(true));
+    this.hubConnection?.onclose(() => this.connectionClosedSubject.next());
 
     this.registerEvent('PlayerDataSent', (data) =>
       this.playerDataSentSubject.next(data)
