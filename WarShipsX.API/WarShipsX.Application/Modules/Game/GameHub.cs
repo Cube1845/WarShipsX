@@ -32,7 +32,7 @@ public class GameHub(ConnectionService connectionService, GameService game) : Au
 
         var opponentData = _game.GetGame(userId)!.GetOpponentData(userId)!;
 
-        if (_connectionService._playerDisconnections.TryGetValue(opponentData.Id, out _))
+        if (_connectionService._playerDisconnections.TryGetValue(opponentData.Id, out _) || !opponentData.InitiallyConnected)
         {
             await Clients.User(userId.ToString()).SendAsync("WaitForOpponent");
         }

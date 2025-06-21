@@ -54,12 +54,6 @@ export class GameComponent implements OnInit, OnDestroy {
       setTimeout(() => {
         if (this.waitingForOpponent) {
           this.openWaitingForOpponentDialog();
-
-          setTimeout(() => {
-            if (!this.waitingForOpponent) {
-              this.dialogService.closeDialog();
-            }
-          }, 500);
         }
       }, 2000);
     });

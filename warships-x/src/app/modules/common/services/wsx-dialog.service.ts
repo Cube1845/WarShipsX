@@ -20,6 +20,7 @@ export class WsxDialogService {
 
   closeDialog(): void {
     this.ref?.close();
+    this.ref = undefined;
   }
 
   displayDialog<S, T>(
