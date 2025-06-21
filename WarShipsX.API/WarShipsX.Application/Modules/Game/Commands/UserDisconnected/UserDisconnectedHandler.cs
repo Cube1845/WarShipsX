@@ -1,12 +1,11 @@
 ﻿namespace WarShipsX.Application.Modules.Game.Commands.UserDisconnected;
 
-public class UserDisconnectedHandler(GameService gameService, TimeProvider time) : ICommandHandler<UserDisconnectedCommand, UserDisconnectedResponse?>
+public class UserDisconnectedHandler(GameService gameService) : ICommandHandler<UserDisconnectedCommand>
 {
     private readonly GameService _game = gameService;
     private readonly Lock _lock = new();
-    private readonly TimeProvider _time = time;
 
-    public Task<UserDisconnectedResponse?> ExecuteAsync(UserDisconnectedCommand command, CancellationToken ct)
+    public Task ExecuteAsync(UserDisconnectedCommand command, CancellationToken ct)
     {
         lock (_lock)
         {
@@ -14,26 +13,12 @@ public class UserDisconnectedHandler(GameService gameService, TimeProvider time)
 
             if (game == null)
             {
-                return Task.FromResult<UserDisconnectedResponse?>(null);
+                return Task.CompletedTask;
             }
 
-            var opponentData = game.GetOpponentData(command.UserId);
-            var playerData = game.GetPlayerData(command.UserId);
+            game.GetPlayerData(command.UserId)!.RegisterDisconnection();
 
-            if (opponentData == null || playerData == null)
-            {
-                return Task.FromResult<UserDisconnectedResponse?>(null);
-            }
-
-            if (opponentData.DisconnectedDate == null)
-            {
-                playerData.SetDisconnectedDate(_time.GetUtcNow().LocalDateTime);
-                return Task.FromResult<UserDisconnectedResponse?>(new(false, opponentData.Id));
-            }
-
-            _game.RemoveGame(command.UserId);
-
-            return Task.FromResult<UserDisconnectedResponse?>(new(true, opponentData.Id));
+            return Task.CompletedTask;
         }
     }
 }

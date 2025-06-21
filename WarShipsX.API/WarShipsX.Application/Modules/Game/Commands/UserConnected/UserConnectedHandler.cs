@@ -4,12 +4,10 @@ using WarShipsX.Application.Modules.Game.Models;
 
 namespace WarShipsX.Application.Modules.Game.Commands.UserConnected;
 
-public class UserConnectedHandler(GameService gameService, IHubContext<GameHub> gameHubContext, ConnectionService connectionService) : ICommandHandler<UserConnectedCommand, UserConnectedResponse?>
+public class UserConnectedHandler(GameService gameService) : ICommandHandler<UserConnectedCommand, UserConnectedResponse?>
 {
     private readonly GameService _game = gameService;
     private readonly Lock _lock = new();
-    private readonly IHubContext<GameHub> _gameHubContext = gameHubContext;
-    private readonly ConnectionService _connectionService = connectionService;
 
     public Task<UserConnectedResponse?> ExecuteAsync(UserConnectedCommand command, CancellationToken ct)
     {
@@ -22,29 +20,15 @@ public class UserConnectedHandler(GameService gameService, IHubContext<GameHub> 
                 return Task.FromResult<UserConnectedResponse?>(null);
             }
 
-            var playerData = game.GetPlayerData(command.UserId);
-            var opponentData = game.GetOpponentData(command.UserId);
-
-            if (playerData == null || opponentData == null)
-            {
-                return Task.FromResult<UserConnectedResponse?>(null);
-            }
-
-            if (!playerData.InitiallyConnected)
-            {
-                playerData.RegisterFirstConnection();
-            }
-
-            playerData.UnsetDisconnectedDate();
+            var playerData = game.GetPlayerData(command.UserId)!;
+            var opponentData = game.GetOpponentData(command.UserId)!;
 
             var executedShots = GetExecutedShots(opponentData.Ships, playerData.ExecutedShots);
 
-            if (_connectionService._playerDisconnections.TryRemove(command.UserId, out var cts))
-            {
-                cts.Cancel();
-            }
+            playerData.RegisterConnection();
 
-            return Task.FromResult<UserConnectedResponse?>(new(playerData.Ships, executedShots, opponentData.ExecutedShots, IsPlayersTurn(game, playerData.Id)));
+            return Task.FromResult<UserConnectedResponse?>
+                (new(playerData.Ships, executedShots, opponentData.ExecutedShots, IsPlayersTurn(game, playerData.Id), opponentData.Connected));
         }
     }
 

@@ -1,21 +1,19 @@
-﻿using WarShipsX.Application.Common.Models;
+﻿using System.Threading.Tasks;
+using WarShipsX.Application.Common.Models;
 using WarShipsX.Application.Modules.Common.Models;
-using WarShipsX.Application.Modules.Common.Services;
 using WarShipsX.Application.Modules.Game.Models;
 
 namespace WarShipsX.Application.Modules.Game;
 
-public class GameService(AwaitableTaskService taskService, IHubContext<GameHub> gameHubContext)
+public class GameService(ConnectionService connectionService, IHubContext<GameHub> gameHubContext)
 {
-    private readonly AwaitableTaskService _taskService = taskService;
+    private readonly ConnectionService _connectionService = connectionService;
     private readonly IHubContext<GameHub> _gameHubContext = gameHubContext;
 
     private readonly List<Models.Game> _games = [];
     private readonly Lock _lock = new();
 
-    private readonly TimeSpan _connectionTime = TimeSpan.FromSeconds(30);
-
-    public void CreateNewGame(PlayerData player1, PlayerData player2)
+    public async Task CreateNewGame(PlayerDto player1, PlayerDto player2)
     {
         if (_games.Any(g =>
             g.Player1.Id == player1.Id ||
@@ -27,11 +25,24 @@ public class GameService(AwaitableTaskService taskService, IHubContext<GameHub> 
             throw new WsxException("One of the players is already in game");
         }
 
-        Models.Game game = new(player1, player2, (Turn)Random.Shared.Next(1, 3));
+        Action<Guid> onConnectionFn = (playerId) =>
+        {
+            if (_connectionService._playerDisconnections.TryRemove(playerId, out var cts))
+            {
+                cts.Cancel();
+            }
+        };
+
+        Action<Guid> onDisconnectionFn = async (playerId) => await RegisterDisconnection(playerId);
+
+        PlayerData playerData1 = new(player1.Id, player1.Ships, onConnectionFn, onDisconnectionFn);
+        PlayerData playerData2 = new(player2.Id, player2.Ships, onConnectionFn, onDisconnectionFn);
+
+        Models.Game game = new(playerData1, playerData2, (Turn)Random.Shared.Next(1, 3));
 
         _games.Add(game);
 
-        WaitForPlayerConnections(game);
+        await Task.WhenAll(RegisterDisconnection(player1.Id), RegisterDisconnection(player2.Id));
     }
 
     public void RemoveGame(Guid participantId)
@@ -50,47 +61,40 @@ public class GameService(AwaitableTaskService taskService, IHubContext<GameHub> 
         }
     }
 
-    private void WaitForPlayerConnections(Models.Game game)
+    private async Task RegisterDisconnection(Guid playerId)
     {
-        CancellationTokenSource cts = new();
+        var game = GetGame(playerId);
 
-        game.Player1.SetOnInitialConnectionFn(() =>
+        if (game == null)
         {
-            if (game.Player2.InitiallyConnected)
-            {
-                cts.Cancel();
-            }
-        });
+            return;
+        }
 
-        game.Player2.SetOnInitialConnectionFn(() =>
+        var opponentData = game.GetOpponentData(playerId)!;
+
+        if (opponentData.Connected)
         {
-            if (game.Player1.InitiallyConnected)
-            {
-                cts.Cancel();
-            }
-        });
+            await _gameHubContext.Clients.User(opponentData.Id.ToString()).SendAsync("WaitForOpponent");
+        }
 
-        Action timePassedFn = () =>
+        Action timePassedFn = async () =>
         {
             _games.Remove(game);
 
-            if (game.Player1.InitiallyConnected)
+            if (opponentData.Connected)
             {
-                _ = _gameHubContext.Clients.User(game.Player1.Id.ToString()).SendAsync("OpponentAbandoned");
-            }
-
-            if (game.Player2.InitiallyConnected)
-            {
-                _ = _gameHubContext.Clients.User(game.Player2.Id.ToString()).SendAsync("OpponentAbandoned");
+                await _gameHubContext.Clients.User(opponentData.Id.ToString()).SendAsync("OpponentAbandoned");
             }
         };
 
-        Action bothPlayersConnectedFn = () =>
+        Action playerConnected = async () =>
         {
-            _ = _gameHubContext.Clients.User(game.Player1.Id.ToString()).SendAsync("OpponentConnected");
-            _ = _gameHubContext.Clients.User(game.Player2.Id.ToString()).SendAsync("OpponentConnected");
+            if (opponentData.Connected)
+            {
+                await _gameHubContext.Clients.User(opponentData.Id.ToString()).SendAsync("OpponentConnected");
+            }
         };
 
-        _ = _taskService.AwaitTask(_connectionTime, bothPlayersConnectedFn, timePassedFn, () => {}, cts.Token);
+        _connectionService.RegisterDisconnection(playerId, playerConnected, timePassedFn);
     }
 }

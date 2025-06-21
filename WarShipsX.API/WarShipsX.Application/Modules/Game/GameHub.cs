@@ -29,13 +29,6 @@ public class GameHub(ConnectionService connectionService, GameService game) : Au
         }
 
         await Clients.User(userId.ToString()).SendAsync("PlayerDataSent", data);
-
-        var opponentData = _game.GetGame(userId)!.GetOpponentData(userId)!;
-
-        if (_connectionService._playerDisconnections.TryGetValue(opponentData.Id, out _) || !opponentData.InitiallyConnected)
-        {
-            await Clients.User(userId.ToString()).SendAsync("WaitForOpponent");
-        }
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -44,29 +37,7 @@ public class GameHub(ConnectionService connectionService, GameService game) : Au
 
         var userId = GetUserId();
 
-        var data = await new UserDisconnectedCommand(userId).ExecuteAsync();
-
-        if (data == null)
-        {
-            return;
-        }
-
-        if (!data.OpponentAlsoDisconnected)
-        {
-            await Clients.User(data.OpponentId.ToString()).SendAsync("WaitForOpponent");
-        }
-
-        await _connectionService.RegisterDisconnection(userId,
-            async () =>
-            {
-                await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentConnected");
-            },
-            async () =>
-            {
-                _game.RemoveGame(userId);
-                await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentAbandoned");
-            }
-        );
+        await new UserDisconnectedCommand(userId).ExecuteAsync();
     }
 
     public async Task AbandonGame()

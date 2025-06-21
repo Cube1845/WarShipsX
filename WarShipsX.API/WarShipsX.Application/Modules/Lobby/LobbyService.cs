@@ -1,5 +1,4 @@
 ﻿using WarShipsX.Application.Modules.Common.Models;
-using WarShipsX.Application.Modules.Lobby.Models;
 
 namespace WarShipsX.Application.Modules.Lobby;
 

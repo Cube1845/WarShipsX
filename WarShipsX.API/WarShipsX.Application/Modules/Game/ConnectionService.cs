@@ -11,7 +11,7 @@ public class ConnectionService(AwaitableTaskService taskService)
 
     private readonly TimeSpan _reconnectionTime = TimeSpan.FromSeconds(30);
 
-    public async Task RegisterDisconnection(Guid playerId, Action playerConnectedFn, Action timePassedFn)
+    public void RegisterDisconnection(Guid playerId, Action playerConnectedFn, Action timePassedFn)
     {
         if (_playerDisconnections.TryRemove(playerId, out var oldCts))
         {
@@ -22,7 +22,7 @@ public class ConnectionService(AwaitableTaskService taskService)
 
         Action cleanUpFn = () => _playerDisconnections.TryRemove(playerId, out _);
 
-        await _taskService
+        _ = _taskService
             .AwaitTask(_reconnectionTime, playerConnectedFn, timePassedFn, cleanUpFn, _playerDisconnections[playerId].Token);
     }
 }

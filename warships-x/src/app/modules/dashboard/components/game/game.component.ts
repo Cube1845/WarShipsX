@@ -37,8 +37,6 @@ export class GameComponent implements OnInit, OnDestroy {
 
   userTurn = signal<boolean>(false);
 
-  waitingForOpponent = false;
-
   constructor() {
     this.gameService.connectionClosed$.subscribe(() => {
       // this.router.navigateByUrl('home');
@@ -49,17 +47,10 @@ export class GameComponent implements OnInit, OnDestroy {
     );
 
     this.gameService.waitForOpponent$.subscribe(() => {
-      this.waitingForOpponent = true;
-
-      setTimeout(() => {
-        if (this.waitingForOpponent) {
-          this.openWaitingForOpponentDialog();
-        }
-      }, 2000);
+      this.openWaitingForOpponentDialog();
     });
 
     this.gameService.opponentConnected$.subscribe(() => {
-      this.waitingForOpponent = false;
       this.dialogService.closeDialog();
     });
 
@@ -112,6 +103,39 @@ export class GameComponent implements OnInit, OnDestroy {
 
       this.userTurn.set(false);
     });
+  }
+
+  ngOnInit(): void {
+    var connected = false;
+
+    setTimeout(() => {
+      if (!connected) {
+        this.openWaitingForConnectionDialog();
+      }
+    }, 1000);
+
+    this.gameService.connect().subscribe({
+      next: () => {
+        this.dialogService.closeDialog();
+
+        connected = true;
+      },
+      error: () => {
+        this.dialogService.closeDialog();
+
+        this.router.navigateByUrl('home');
+
+        this.toastService.error(
+          'There was an error while trying to connect to the game'
+        );
+
+        connected = true;
+      },
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.gameService.disconnect();
   }
 
   private addPositionsToSunk(sunkPosition: Position): void {
@@ -217,41 +241,12 @@ export class GameComponent implements OnInit, OnDestroy {
     );
   }
 
-  ngOnInit(): void {
-    var connected = false;
-
-    setTimeout(() => {
-      if (!connected) {
-        this.openWaitingForConnectionDialog();
-      }
-    }, 1000);
-
-    this.gameService.connect().subscribe({
-      next: () => {
-        this.dialogService.closeDialog();
-
-        connected = true;
-      },
-      error: () => {
-        this.dialogService.closeDialog();
-
-        this.router.navigateByUrl('home');
-
-        this.toastService.error(
-          'There was an error while trying to connect to the game'
-        );
-
-        connected = true;
-      },
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.gameService.disconnect();
-  }
-
   private setPlayerDataSignals(data: PlayerData) {
     this.userTurn.set(data.playersTurn);
+
+    if (!data.opponentConnected) {
+      this.openWaitingForOpponentDialog();
+    }
 
     const flattenedUserShips = data.ships.map((s) => s.positions).flat();
     this.userShips.set(flattenedUserShips);

@@ -7,4 +7,5 @@ export type PlayerData = {
   executedShots: Shot[];
   opponentShots: Position[];
   playersTurn: boolean;
+  opponentConnected: boolean;
 };
