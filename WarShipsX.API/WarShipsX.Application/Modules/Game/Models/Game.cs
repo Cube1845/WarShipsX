@@ -7,6 +7,7 @@ public class Game(PlayerData player1, PlayerData player2, Turn turn)
     public PlayerData Player1 { get; private init; } = player1;
     public PlayerData Player2 { get; private init; } = player2;
     public Turn Turn { get; private set; } = turn;
+    public Turn InitialTurn { get; private init; } = turn;
 
     public void ChangeTurn()
     {

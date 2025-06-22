@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using WarShipsX.Application.Common.Models;
 using WarShipsX.Application.Modules.Common.Models;
+using WarShipsX.Application.Modules.Game.Commands.AbandonGame;
 using WarShipsX.Application.Modules.Game.Commands.SendPlayerData;
 using WarShipsX.Application.Modules.Game.Commands.Shoot;
 using WarShipsX.Application.Modules.Game.Commands.UserConnected;
@@ -9,11 +10,8 @@ using WarShipsX.Application.Modules.Game.Commands.UserDisconnected;
 namespace WarShipsX.Application.Modules.Game;
 
 [Authorize]
-public class GameHub(ConnectionService connectionService, GameService game) : AuthorizedHub
+public class GameHub : AuthorizedHub
 {
-    private readonly ConnectionService _connectionService = connectionService;
-    private readonly GameService _game = game;
-
     public override async Task OnConnectedAsync()
     {
         await base.OnConnectedAsync();
@@ -33,21 +31,21 @@ public class GameHub(ConnectionService connectionService, GameService game) : Au
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
+        await new UserDisconnectedCommand(GetUserId()).ExecuteAsync();
+
         await base.OnDisconnectedAsync(exception);
-
-        var userId = GetUserId();
-
-        await new UserDisconnectedCommand(userId).ExecuteAsync();
     }
 
     public async Task AbandonGame()
     {
         AuthorizeUser();
 
-        var userId = GetUserId();
+        var data = await new AbandonGameCommand(GetUserId()).ExecuteAsync();
 
-        await Clients.User(_game.GetGame(userId)?.GetOpponentData(userId)?.Id.ToString()!).SendAsync("OpponentAbandoned");
-        _game.RemoveGame(userId);
+        if (data != null)
+        {
+            await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentAbandoned");
+        }
 
         Context.Abort();
     }

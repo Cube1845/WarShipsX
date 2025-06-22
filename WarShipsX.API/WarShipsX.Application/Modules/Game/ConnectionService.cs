@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using WarShipsX.Application.Modules.Common.Services;
+using WarShipsX.Application.Common.Services;
 
 namespace WarShipsX.Application.Modules.Game;
 

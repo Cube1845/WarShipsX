@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using WarShipsX.Application.Common;
-using WarShipsX.Application.Modules.Common.Services;
+using WarShipsX.Application.Common.Services;
 using WarShipsX.Application.Modules.Game;
 using WarShipsX.Application.Modules.Lobby;
 using WarShipsX.Infrastructure;

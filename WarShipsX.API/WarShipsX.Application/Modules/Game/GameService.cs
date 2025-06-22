@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using WarShipsX.Application.Common.Models;
+﻿using WarShipsX.Application.Common.Models;
 using WarShipsX.Application.Modules.Common.Models;
 using WarShipsX.Application.Modules.Game.Models;
 

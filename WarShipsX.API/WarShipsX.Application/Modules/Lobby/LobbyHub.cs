@@ -1,75 +1,69 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using WarShipsX.Application.Common.Models;
 using WarShipsX.Application.Modules.Common.Models;
-using WarShipsX.Application.Modules.Game;
-using WarShipsX.Application.Modules.Lobby.Commands.StartGame;
+using WarShipsX.Application.Modules.Lobby.Commands.JoinQueue;
+using WarShipsX.Application.Modules.Lobby.Commands.LeaveQueue;
+using WarShipsX.Application.Modules.Lobby.Commands.UserConnected;
 
 namespace WarShipsX.Application.Modules.Lobby;
 
 [Authorize]
-public class LobbyHub(LobbyService lobby, GameService game) : AuthorizedHub
+public class LobbyHub : AuthorizedHub
 {
-    private readonly LobbyService _lobby = lobby;
-    private readonly GameService _game = game;
-
     public override async Task OnConnectedAsync()
     {
         await base.OnConnectedAsync();
 
-        if (_game.GetGame(GetUserId()) != null)
-        {
-            await Clients.User(GetUserId().ToString()).SendAsync("PlayerParticipatesInGame", _lobby.GetConnectedPlayersCount());
+        var userId = GetUserId();
 
+        var data = await new UserConnectedCommand(userId).ExecuteAsync();
+
+        if (data.PlayerParticipates)
+        {
+            await Clients.User(userId.ToString()).SendAsync("PlayerParticipatesInGame");
             Context.Abort();
 
             return;
         }
 
-        await Clients.User(GetUserId().ToString()).SendAsync("PlayersCountChanged", _lobby.GetConnectedPlayersCount());
-
-        return;
-    }
-
-    public async Task JoinLobby(List<Ship> ships)
-    {
-        AuthorizeUser();
-
-        var userId = GetUserId();
-
-        _lobby.AddPlayerToQueue(new(userId, ships));
-
-        var startGameData = await new StartGameCommand(userId, ships).ExecuteAsync();
-
-        if (startGameData != null)
-        {
-            await Clients.User(startGameData.Player1Id.ToString()).SendAsync("StartGame");
-            await Clients.User(startGameData.Player2Id.ToString()).SendAsync("StartGame");
-        }
-
-        await SendPlayersCount();
-    }
-
-    public async Task LeaveLobby()
-    {
-        AuthorizeUser();
-
-        _lobby.RemovePlayerFromQueue(GetUserId());
-        await SendPlayersCount();
+        await Clients.User(userId.ToString()).SendAsync("PlayersCountChanged", data.PlayersInQueueCount);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        _lobby.RemovePlayerFromQueue(GetUserId());
-        await SendPlayersCount();
+        var data = await new LeaveQueueCommand(GetUserId()).ExecuteAsync();
+
+        await SendPlayersCount(data.PlayersInQueueCount);
 
         await base.OnDisconnectedAsync(exception);
-
-        return;
     }
 
-    private async Task SendPlayersCount()
+    public async Task JoinQueue(List<Ship> ships)
     {
         AuthorizeUser();
-        await Clients.All.SendAsync("PlayersCountChanged", _lobby.GetConnectedPlayersCount());
+
+        var data = await new JoinQueueCommand(GetUserId(), ships).ExecuteAsync();
+
+        if (data.Player1Id != null && data.Player2Id != null)
+        {
+            await Clients.User(data.Player1Id!.Value.ToString()).SendAsync("StartGame");
+            await Clients.User(data.Player2Id!.Value.ToString()).SendAsync("StartGame");
+        }
+
+        await SendPlayersCount(data.NewPlayersInQueueCount);
+    }
+
+    public async Task LeaveQueue()
+    {
+        AuthorizeUser();
+
+        var data = await new LeaveQueueCommand(GetUserId()).ExecuteAsync();
+
+        await SendPlayersCount(data.PlayersInQueueCount);
+    }
+
+    private async Task SendPlayersCount(int playersCount)
+    {
+        await Clients.All.SendAsync("PlayersCountChanged", playersCount);
     }
 }

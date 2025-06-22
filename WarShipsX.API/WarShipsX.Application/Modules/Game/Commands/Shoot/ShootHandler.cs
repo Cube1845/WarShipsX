@@ -30,8 +30,8 @@ public class ShootHandler(GameService game) : ICommandHandler<ShootCommand, Shoo
 
         return Task.FromResult<ShootResponse?>(new
         (
-            GetShotState(command.ShotPosition, opponentData.Ships, playerData.ExecutedShots), false, opponentData.Id)
-        );
+            GetShotState(command.ShotPosition, opponentData.Ships, playerData.ExecutedShots), false, opponentData.Id
+        ));
     }
 
     private bool IsPlayersTurn(Models.Game game, Guid playerId)

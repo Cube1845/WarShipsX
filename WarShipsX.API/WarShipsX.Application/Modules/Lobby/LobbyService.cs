@@ -4,22 +4,22 @@ namespace WarShipsX.Application.Modules.Lobby;
 
 public class LobbyService
 {
-    private readonly List<PlayerDto> _connectedPlayers = [];
+    private readonly List<PlayerDto> _queue = [];
     private readonly Lock _lock = new();
 
-    public List<PlayerDto> GetPlayers()
+    public List<PlayerDto> GetPlayersInQueue()
     {
         lock (_lock)
         {
-            return [.. _connectedPlayers];
+            return [.. _queue];
         }
     }
 
-    public int GetConnectedPlayersCount()
+    public int GetPlayersInQueueCount()
     {
         lock (_lock)
         {
-            return _connectedPlayers.Count;
+            return _queue.Count;
         }
     }
 
@@ -27,7 +27,7 @@ public class LobbyService
     {
         lock (_lock)
         {
-            _connectedPlayers.Add(data);
+            _queue.Add(data);
         }
     }
 
@@ -35,7 +35,7 @@ public class LobbyService
     {
         lock (_lock)
         {
-            _connectedPlayers.RemoveAll(x => x.Id == userId);
+            _queue.RemoveAll(x => x.Id == userId);
         }
     }
 }

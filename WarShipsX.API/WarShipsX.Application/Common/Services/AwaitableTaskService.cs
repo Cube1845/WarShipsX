@@ -1,4 +1,4 @@
-﻿namespace WarShipsX.Application.Modules.Common.Services;
+﻿namespace WarShipsX.Application.Common.Services;
 
 public class AwaitableTaskService
 {
