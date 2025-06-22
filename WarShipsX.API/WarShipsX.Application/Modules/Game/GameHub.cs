@@ -6,6 +6,7 @@ using WarShipsX.Application.Modules.Game.Commands.SendPlayerData;
 using WarShipsX.Application.Modules.Game.Commands.Shoot;
 using WarShipsX.Application.Modules.Game.Commands.UserConnected;
 using WarShipsX.Application.Modules.Game.Commands.UserDisconnected;
+using WarShipsX.Application.Modules.Game.Models;
 
 namespace WarShipsX.Application.Modules.Game;
 
@@ -64,12 +65,39 @@ public class GameHub : AuthorizedHub
             return;
         }
 
-        if (data.GameEnded)
+        if (data.GameState == GameState.Ongoing)
         {
-            //here implementation
+            await Task.WhenAll
+            (
+                Clients.User(data.OpponentId.ToString()).SendAsync("OpponentShot", position),
+                Clients.User(userId.ToString()).SendAsync("ShotFeedback", new Shot(position, data.ShotState))
+            );
+
+            return;
         }
 
-        await Clients.User(data.OpponentId.ToString()).SendAsync("OpponentShot", position);
-        await Clients.User(userId.ToString()).SendAsync("ShotFeedback", new Shot(position, data.ShotState));
+        Action sendGameFinishInfo = data.GameState switch
+        {
+            GameState.Won => async () =>
+            {
+                await Task.WhenAll
+                (
+                    Clients.User(data.OpponentId.ToString()).SendAsync("GameEnded", data.OpponentId == data.WinnerId),
+                    Clients.User(userId.ToString()).SendAsync("GameEnded", userId == data.WinnerId)
+                );
+            },
+            GameState.Tied => async () =>
+            {
+                await Task.WhenAll
+                (
+                    Clients.User(data.OpponentId.ToString()).SendAsync("GameTied"),
+                    Clients.User(userId.ToString()).SendAsync("GameTied")
+                );
+            },
+
+            _ => () => {},
+        };
+
+        sendGameFinishInfo();
     }
 }

@@ -2,4 +2,4 @@
 
 namespace WarShipsX.Application.Modules.Game.Commands.Shoot;
 
-public record ShootResponse(ShotState ShotState, bool GameEnded, Guid OpponentId);
+public record ShootResponse(ShotState ShotState, Guid OpponentId, GameState GameState, Guid? WinnerId);

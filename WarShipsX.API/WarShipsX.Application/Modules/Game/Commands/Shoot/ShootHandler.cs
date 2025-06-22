@@ -26,12 +26,88 @@ public class ShootHandler(GameService game) : ICommandHandler<ShootCommand, Shoo
 
         playerData.ExecutedShots.Add(command.ShotPosition);
 
-        game.ChangeTurn();
+        var gameState = GetGameState(game, out var winnerId);
+
+        if (gameState == GameState.Ongoing)
+        {
+            game.ChangeTurn();
+        }
+        else
+        {
+            _game.RemoveGame(command.PlayerId);
+        }
 
         return Task.FromResult<ShootResponse?>(new
         (
-            GetShotState(command.ShotPosition, opponentData.Ships, playerData.ExecutedShots), false, opponentData.Id
+            GetShotState(command.ShotPosition, opponentData.Ships, playerData.ExecutedShots),
+            opponentData.Id,
+            gameState,
+            winnerId
         ));
+    }
+
+    private GameState GetGameState(Models.Game game, out Guid? winnerId)
+    {
+        winnerId = null;
+
+        var player1RemainingShipsToSink = GetRemainingShipPositionsCount(game.Player2.Ships, game.Player1.ExecutedShots);
+        var player2RemainingShipsToSink = GetRemainingShipPositionsCount(game.Player1.Ships, game.Player2.ExecutedShots);
+
+        if (player1RemainingShipsToSink == 0)
+        {
+            if (game.InitialTurn == Turn.Player2)
+            {
+                winnerId = game.Player1.Id;
+                return GameState.Won;
+            }
+
+            if (player2RemainingShipsToSink > 1)
+            {
+                winnerId = game.Player1.Id;
+                return GameState.Won;
+            }
+
+            if (player2RemainingShipsToSink == 0)
+            {
+                return GameState.Tied;
+            }
+        }
+
+        if (player2RemainingShipsToSink == 0)
+        {
+            if (game.InitialTurn == Turn.Player1)
+            {
+                winnerId = game.Player2.Id;
+                return GameState.Won;
+            }
+
+            if (player1RemainingShipsToSink > 1)
+            {
+                winnerId = game.Player2.Id;
+                return GameState.Won;
+            }
+
+            if (player1RemainingShipsToSink == 0)
+            {
+                return GameState.Tied;
+            }
+        }
+
+        return GameState.Ongoing;
+    }
+
+    private int GetRemainingShipPositionsCount(List<Ship> ships, List<Position> shots)
+    {
+        var flattenedShips = ships
+            .Select(s => s.Positions)
+            .SelectMany(s => s)
+            .ToList();
+
+        var reducedShips = flattenedShips
+            .Where(s => !shots.Contains(s))
+            .ToList();
+
+        return reducedShips.Count;
     }
 
     private bool IsPlayersTurn(Models.Game game, Guid playerId)
