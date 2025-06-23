@@ -32,11 +32,11 @@ export class LobbyService extends HubService {
     super('lobby-hub', () => this.registerEvents());
   }
 
-  joinLobby(ships: Ship[]): Observable<void> {
+  joinQueue(ships: Ship[]): Observable<void> {
     return this.invoke('JoinQueue', ships);
   }
 
-  leaveLobby(): Observable<void> {
+  leaveQueue(): Observable<void> {
     return this.invoke('LeaveQueue');
   }
 }

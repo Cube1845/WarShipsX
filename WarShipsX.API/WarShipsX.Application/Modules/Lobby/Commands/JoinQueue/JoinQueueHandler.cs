@@ -15,24 +15,14 @@ public class JoinQueueHandler(LobbyService lobby, GameService game) : ICommandHa
 
         try
         {
-            if (_lobby.GetPlayersInQueueCount() < 2)
+            if (_lobby.GetPlayersInQueueCount() == 0)
             {
                 _lobby.AddPlayerToQueue(new(command.Id, command.Ships));
                 return new(null, null, _lobby.GetPlayersInQueueCount());
             }
 
-            var users = _lobby
-                .GetPlayersInQueue()
-                .Where(x => x.Id != command.Id)
-                .ToList();
-
-            if (users.Count == 0)
-            {
-                _lobby.AddPlayerToQueue(new(command.Id, command.Ships));
-                return new(null, null, _lobby.GetPlayersInQueueCount());
-            }
-
-            var opponent = users[Random.Shared.Next(0, users.Count)];
+            var opponent =
+                _lobby.GetPlayersInQueue()[Random.Shared.Next(0, _lobby.GetPlayersInQueueCount())];
 
             await _game.CreateNewGame(new(command.Id, command.Ships), opponent);
 

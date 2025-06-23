@@ -82,8 +82,8 @@ public class GameHub : AuthorizedHub
             {
                 await Task.WhenAll
                 (
-                    Clients.User(data.OpponentId.ToString()).SendAsync("GameEnded", data.OpponentId == data.WinnerId),
-                    Clients.User(userId.ToString()).SendAsync("GameEnded", userId == data.WinnerId)
+                    Clients.User(data.OpponentId.ToString()).SendAsync("GameEnded", data.OpponentId == data.WinnerId ? null : data.WinnerShips),
+                    Clients.User(userId.ToString()).SendAsync("GameEnded", userId == data.WinnerId ? null : data.WinnerShips)
                 );
             },
             GameState.Tied => async () =>

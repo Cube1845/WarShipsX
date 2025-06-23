@@ -11,6 +11,7 @@ import { InfoPopupComponent } from '../../../common/components/info-popup/info-p
 import { ToastService } from '../../../common/services/toast.service';
 import { ShotState } from '../../models/shot-state';
 import { WsButtonComponent } from '../../../common/components/ws-button/ws-button.component';
+import { GameEndDialogComponent } from '../game-end-dialog/game-end-dialog.component';
 
 @Component({
   selector: 'app-game',
@@ -103,6 +104,37 @@ export class GameComponent implements OnInit, OnDestroy {
 
       this.userTurn.set(false);
     });
+
+    this.gameService.gameEnded$.subscribe((winnerShips) => {
+      this.userTurn.set(false);
+
+      if (!!winnerShips) {
+        this.hitPositions.update((p) => [
+          ...p,
+          ...winnerShips.map((x) => x.positions).flat(),
+        ]);
+
+        this.dialogService.displayDialog(GameEndDialogComponent, '', 'lost', {
+          showHeader: false,
+          closable: false,
+        });
+        return;
+      }
+
+      this.dialogService.displayDialog(GameEndDialogComponent, '', 'won', {
+        showHeader: false,
+        closable: false,
+      });
+    });
+
+    this.gameService.gameTied$.subscribe(() => {
+      this.userTurn.set(false);
+
+      this.dialogService.displayDialog(GameEndDialogComponent, '', 'tied', {
+        showHeader: false,
+        closable: false,
+      });
+    });
   }
 
   ngOnInit(): void {
@@ -136,6 +168,74 @@ export class GameComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.gameService.disconnect();
+  }
+
+  fieldClicked(position: Position): void {
+    if (
+      !this.userTurn() ||
+      this.hitPositions().some(
+        (x) => x.letter == position.letter && x.number == position.number
+      ) ||
+      this.missedPositions().some(
+        (x) => x.letter == position.letter && x.number == position.number
+      ) ||
+      this.sunkPositions().some(
+        (x) => x.letter == position.letter && x.number == position.number
+      )
+    ) {
+      return;
+    }
+
+    this.currentSelectedTile.set(position);
+
+    this.dialogService
+      .displayDialog(ShootDialogComponent, 'Selected field', position, {
+        position: 'top',
+      })
+      .subscribe({
+        next: (position: any) => {
+          this.currentSelectedTile.set(undefined);
+
+          if (position) {
+            this.gameService.shoot(position);
+          }
+        },
+      });
+  }
+
+  abandonGame(): void {
+    this.dialogService
+      .displayConfirmation(
+        'Are you sure?',
+        'Do you want to abandon the game?',
+        {
+          rejectLabel: 'Stay',
+          acceptLabel: 'Leave',
+        }
+      )
+      .subscribe(() => {
+        this.gameService
+          .abandonGame()
+          .subscribe(() => this.router.navigateByUrl('home'));
+      });
+  }
+
+  openWaitingForConnectionDialog(): void {
+    this.dialogService.displayDialog(
+      InfoPopupComponent,
+      '',
+      { text: 'Waiting for connection...' },
+      { closable: false, showHeader: false }
+    );
+  }
+
+  openWaitingForOpponentDialog(): void {
+    this.dialogService.displayDialog(
+      InfoPopupComponent,
+      '',
+      { text: 'Waiting for opponent...' },
+      { closable: false, showHeader: false }
+    );
   }
 
   private addPositionsToSunk(sunkPosition: Position): void {
@@ -207,40 +307,6 @@ export class GameComponent implements OnInit, OnDestroy {
     return positions;
   }
 
-  abandonGame(): void {
-    this.dialogService
-      .displayConfirmation(
-        'Are you sure?',
-        'Do you want to abandon the game?',
-        {
-          rejectLabel: 'Stay',
-          acceptLabel: 'Leave',
-        }
-      )
-      .subscribe(() => {
-        this.gameService.abandonGame();
-        this.router.navigateByUrl('home');
-      });
-  }
-
-  openWaitingForConnectionDialog(): void {
-    this.dialogService.displayDialog(
-      InfoPopupComponent,
-      '',
-      { text: 'Waiting for connection...' },
-      { closable: false, showHeader: false }
-    );
-  }
-
-  openWaitingForOpponentDialog(): void {
-    this.dialogService.displayDialog(
-      InfoPopupComponent,
-      '',
-      { text: 'Waiting for opponent...' },
-      { closable: false, showHeader: false }
-    );
-  }
-
   private setPlayerDataSignals(data: PlayerData) {
     this.userTurn.set(data.playersTurn);
 
@@ -292,38 +358,5 @@ export class GameComponent implements OnInit, OnDestroy {
     });
 
     return hitPositions;
-  }
-
-  fieldClicked(position: Position): void {
-    if (
-      !this.userTurn() ||
-      this.hitPositions().some(
-        (x) => x.letter == position.letter && x.number == position.number
-      ) ||
-      this.missedPositions().some(
-        (x) => x.letter == position.letter && x.number == position.number
-      ) ||
-      this.sunkPositions().some(
-        (x) => x.letter == position.letter && x.number == position.number
-      )
-    ) {
-      return;
-    }
-
-    this.currentSelectedTile.set(position);
-
-    this.dialogService
-      .displayDialog(ShootDialogComponent, 'Selected field', position, {
-        position: 'top',
-      })
-      .subscribe({
-        next: (position: any) => {
-          this.currentSelectedTile.set(undefined);
-
-          if (position) {
-            this.gameService.shoot(position);
-          }
-        },
-      });
   }
 }

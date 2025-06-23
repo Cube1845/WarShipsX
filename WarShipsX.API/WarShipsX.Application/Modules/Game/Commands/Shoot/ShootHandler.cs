@@ -42,6 +42,7 @@ public class ShootHandler(GameService game) : ICommandHandler<ShootCommand, Shoo
             GetShotState(command.ShotPosition, opponentData.Ships, playerData.ExecutedShots),
             opponentData.Id,
             gameState,
+            winnerId == null ? null : game.GetPlayerData(winnerId!.Value)!.Ships,
             winnerId
         ));
     }

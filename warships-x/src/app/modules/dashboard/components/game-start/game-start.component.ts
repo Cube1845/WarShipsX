@@ -201,7 +201,7 @@ export class GameStartComponent implements OnInit, OnDestroy {
     ];
 
     this.lobbyService
-      .joinLobby(
+      .joinQueue(
         ships.map((s) => {
           return { positions: s };
         })
@@ -210,6 +210,6 @@ export class GameStartComponent implements OnInit, OnDestroy {
   }
 
   leaveQueue(): void {
-    this.lobbyService.leaveLobby().subscribe(() => this.userInQueue.set(false));
+    this.lobbyService.leaveQueue().subscribe(() => this.userInQueue.set(false));
   }
 }

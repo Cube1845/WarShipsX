@@ -9,7 +9,7 @@ public class UserConnectedHandler(LobbyService lobby, GameService game) : IComma
 
     public Task<UserConnectedResponse> ExecuteAsync(UserConnectedCommand command, CancellationToken ct)
     {
-        var playersCount = _lobby.GetConnectedPlayersCount();
+        var playersCount = _lobby.GetPlayersInQueueCount();
         var playerParticipates = _game.GetGame(command.PlayerId) != null;
 
         return Task.FromResult<UserConnectedResponse>(new(playerParticipates, playersCount));
