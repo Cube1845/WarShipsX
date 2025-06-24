@@ -53,17 +53,15 @@ export class RegisterComponent {
       password: this.credsFormGroup.value.password!,
     };
 
-    this.registerRequest.request(data).subscribe({
-      next: (result) => {
-        if (result.isSuccess) {
-          this.router.navigateByUrl('');
-          this.toastService.success('Registered! Now log in');
+    this.registerRequest.request(data).subscribe((result) => {
+      if (result.isSuccess) {
+        this.router.navigateByUrl('');
+        this.toastService.success('Registered! Now log in');
 
-          return;
-        }
+        return;
+      }
 
-        this.toastService.error(result.message || 'Failed to register');
-      },
+      this.toastService.error(result.message || 'Failed to register');
     });
   }
 }

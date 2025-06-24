@@ -4,7 +4,6 @@ using WarShipsX.Application.Common;
 using WarShipsX.Application.Common.Services;
 using WarShipsX.Application.Modules.Game;
 using WarShipsX.Application.Modules.Lobby;
-using WarShipsX.Infrastructure;
 
 namespace WarShipsX.Application;
 

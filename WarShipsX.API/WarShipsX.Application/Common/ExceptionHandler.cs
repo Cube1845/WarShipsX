@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 using WarShipsX.Application.Common.Models;
 
-namespace WarShipsX.Infrastructure;
+namespace WarShipsX.Application.Common;
 
 public sealed class ExceptionHandler : IExceptionHandler
 {

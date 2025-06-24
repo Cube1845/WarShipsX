@@ -50,13 +50,14 @@ export class LoginComponent {
 
     this.loginRequest.request(data).subscribe({
       next: (result) => {
-        if (this.isResult(result)) {
-          this.toastService.error(result.message || 'Failed to log in');
-          return;
+        if (!this.isResult(result)) {
+          this.authDataService.setAuthData(result);
+          this.router.navigateByUrl('home');
         }
-
-        this.authDataService.setAuthData(result);
-        this.router.navigateByUrl('home');
+      },
+      error: (result) => {
+        this.toastService.error(result.error.message || 'Failed to log in');
+        return;
       },
     });
   }
