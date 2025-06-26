@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using WarShipsX.Application.Common.Interfaces;
 using WarShipsX.Infrastructure.Auth.Config;
 using WarShipsX.Infrastructure.Auth.Services;
 using WarShipsX.Infrastructure.Persistence;
@@ -22,8 +21,6 @@ public static class DependencyInjection
         {
             options.UseSqlServer(configuration.GetConnectionString("SqlServer"));
         });
-
-        services.AddScoped<IWsxDbContext, WsxDbContext>();
 
         services.AddScoped<PasswordHashService>();
         services.AddScoped<TokenService>();

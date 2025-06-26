@@ -1,10 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WarShipsX.Application.Common.Interfaces;
 using WarShipsX.Infrastructure.Auth.Entities;
 
 namespace WarShipsX.Infrastructure.Persistence;
 
-public class WsxDbContext(DbContextOptions<WsxDbContext> options) : DbContext(options), IWsxDbContext
+public class WsxDbContext(DbContextOptions<WsxDbContext> options) : DbContext(options)
 {
     public DbSet<AppUser> AppUsers { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
