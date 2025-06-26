@@ -1,0 +1,8 @@
+@import "../../../../responsive.scss";
+
+:host {
+  width: 100vw;
+  margin: auto;
+  height: 100%;
+  display: flex;
+}

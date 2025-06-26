@@ -5,7 +5,7 @@
     
     <ws-input label="Password" class="m-0 p-0 mb-3" type="password" formControlName="password"/>
 
-    <ws-button label="Log in" class="m-0 p-0 mb-3 w-full" (click)="loginUser()" [disabled]="credsFormGroup.invalid"/>
+    <ws-button label="Log in" class="m-0 p-0 mb-3 w-full" (click)="loginUser()" [disabled]="credsFormGroup.invalid" [loading]="loginButtonLoading()"/>
 
     <a routerLink="register">Don't have an account? Register</a>
 </div>

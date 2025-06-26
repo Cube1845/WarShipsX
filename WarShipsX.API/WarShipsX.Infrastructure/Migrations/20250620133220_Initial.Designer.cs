@@ -12,7 +12,7 @@ using WarShipsX.Infrastructure.Persistence;
 namespace WarShipsX.Infrastructure.Migrations
 {
     [DbContext(typeof(WsxDbContext))]
-    [Migration("20250525152941_Initial")]
+    [Migration("20250620133220_Initial")]
     partial class Initial
     {
         /// <inheritdoc />

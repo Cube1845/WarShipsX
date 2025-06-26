@@ -1,0 +1,45 @@
+@import "../../../../responsive.scss";
+
+:host {
+    width: 100%;
+    margin: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .container {
+        width: 95vw !important;
+
+        @include respond("md") {
+            width: 768px !important;
+        }
+    }
+
+    .filling {
+        width: 180px;
+    }
+
+    .header {
+        background-color: var(--p-primary-color);
+    }
+
+    h1 {
+        color: var(--p-surface-50);
+    }
+
+    h2, h4 {
+        color: var(--p-surface-300);
+    }
+
+    h3 {
+        color: var(--p-surface-400);
+    }
+
+    .cancel-button-absolute {
+        background-color: var(--p-surface-900);
+        bottom: 8vh;
+        border: 1px solid var(--p-surface-500);
+    }
+}

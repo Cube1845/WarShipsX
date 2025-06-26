@@ -12,4 +12,7 @@ export class WsButtonComponent {
   label = input<string | null>(null);
   icon = input<string | null>(null);
   disabled = input(false);
+  size = input<'small' | 'large'>();
+  outlined = input<boolean>(false);
+  color = input<'primary' | 'secondary'>('primary');
 }
