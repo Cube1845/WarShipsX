@@ -12,6 +12,7 @@ import { ToastService } from '../../../common/services/toast.service';
 import { ShotState } from '../../models/shot-state';
 import { WsButtonComponent } from '../../../common/components/ws-button/ws-button.component';
 import { GameEndDialogComponent } from '../game-end-dialog/game-end-dialog.component';
+import { environment } from '../../../../../environments/environment.development';
 
 @Component({
   selector: 'app-game',
@@ -40,7 +41,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   constructor() {
     this.gameService.connectionClosed$.subscribe(() => {
-      // this.router.navigateByUrl('home');
+      this.router.navigateByUrl('home');
     });
 
     this.gameService.playerDataSent$.subscribe((data) =>
@@ -144,7 +145,7 @@ export class GameComponent implements OnInit, OnDestroy {
       if (!connected) {
         this.openWaitingForConnectionDialog();
       }
-    }, 1000);
+    }, environment.apiResponseTime);
 
     this.gameService.connect().subscribe({
       next: () => {
