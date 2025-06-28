@@ -13,7 +13,8 @@
                         ' border ' +
                         (hoverable() ? ' hoverable ' : ' ') + 
                         (isSelectedPosition({letter: alphaChars[x - 1], number: y})() ? ' selected ' : ' ') + 
-                        (positionsInclude(secondlyHighlightedPositions, {letter: alphaChars[x - 1], number: y})() ? ' secondly-highlighted ' : ' ')" 
+                        (positionsInclude(secondlyHighlightedPositions, {letter: alphaChars[x - 1], number: y})() ? ' secondly-highlighted ' : ' ') + 
+                        (positionsInclude(disabledPositions, {letter: alphaChars[x - 1], number: y})() ? ' disabled ' : ' ')" 
                         (click)="tileClick(alphaChars[x - 1], y)">
                         {{ (positionsInclude(xPositions, {letter: alphaChars[x - 1], number: y})() ? 'X' : '') }}
                     </td>

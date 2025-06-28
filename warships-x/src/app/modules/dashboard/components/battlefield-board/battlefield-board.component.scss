@@ -14,6 +14,10 @@
         color: white !important;
     }
 
+    .disabled {
+        background-color: var(--p-surface-850) !important;
+    }
+
     .secondly-highlighted {
         background-color: var(--p-primary-800) !important;
     }
