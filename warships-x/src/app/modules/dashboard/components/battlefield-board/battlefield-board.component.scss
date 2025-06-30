@@ -22,6 +22,14 @@
         background-color: var(--p-primary-800) !important;
     }
 
+    .selected {
+        background-color: var(--p-surface-600) !important;
+    }
+
+    .selected.secondly-highlighted {
+        background-color: var(--p-primary-500) !important;
+    }
+
     table {
         border-collapse: collapse;
         
@@ -63,10 +71,6 @@
             &.hoverable:hover {
                 background-color: var(--p-surface-700);
                 cursor: pointer;
-            }
-
-            &.selected {
-                background-color: var(--p-surface-600);
             }
 
             @include respond("sm") {

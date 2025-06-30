@@ -11,6 +11,7 @@
                 [secondlyHighlightedPositions]="userShips()"
                 [highlightedPositions]="opponentHitPositions()"
                 [xPositions]="opponentShotPositions()"
+                [selectedPosition]="lastOpponentShot()"
             />
         </div>
 
@@ -23,6 +24,7 @@
                 [highlightedPositions]="hitPositions().concat(sunkPositions())"
                 [secondlyHighlightedPositions]="missedPositions()"
                 [xPositions]="sunkPositions()"
+                [disabledPositions]="disabledPositions()"
             />
         </div>
     </div>

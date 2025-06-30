@@ -32,10 +32,14 @@ export class GameComponent implements OnInit, OnDestroy {
   hitPositions = signal<Position[]>([]);
   missedPositions = signal<Position[]>([]);
 
+  disabledPositions = signal<Position[]>([]);
+
   userShips = signal<Position[]>([]);
 
   opponentShotPositions = signal<Position[]>([]);
   opponentHitPositions = signal<Position[]>([]);
+
+  lastOpponentShot = signal<Position | undefined>(undefined);
 
   userTurn = signal<boolean>(false);
 
@@ -76,6 +80,8 @@ export class GameComponent implements OnInit, OnDestroy {
       ]);
 
       this.userTurn.set(true);
+
+      this.lastOpponentShot.set(position);
     });
 
     this.gameService.shotFeedback$.subscribe((shot) => {
@@ -277,6 +283,8 @@ export class GameComponent implements OnInit, OnDestroy {
     }
 
     this.sunkPositions.update((current) => [...current, ...sunkPositions]);
+
+    this.addSurroundingToDisabled();
   }
 
   private getAdjacentPositions(
@@ -303,6 +311,71 @@ export class GameComponent implements OnInit, OnDestroy {
     }
     if (pos.number < 10) {
       positions.push({ letter: pos.letter, number: pos.number + 1 });
+    }
+
+    return positions;
+  }
+
+  private addSurroundingToDisabled(): void {
+    const alphaNumChars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    const disabled: Position[] = [];
+
+    for (const pos of this.sunkPositions()) {
+      const neighbors = this.getAllSurroundingPositions(pos, alphaNumChars);
+
+      for (const neighbor of neighbors) {
+        const isAlreadyHitSunkOrMissed =
+          this.hitPositions().some(
+            (p) => p.letter === neighbor.letter && p.number === neighbor.number
+          ) ||
+          this.sunkPositions().some(
+            (p) => p.letter === neighbor.letter && p.number === neighbor.number
+          ) ||
+          this.missedPositions().some(
+            (p) => p.letter === neighbor.letter && p.number === neighbor.number
+          );
+
+        const isAlreadyDisabled = this.disabledPositions().some(
+          (p) => p.letter === neighbor.letter && p.number === neighbor.number
+        );
+
+        if (!isAlreadyHitSunkOrMissed && !isAlreadyDisabled) {
+          disabled.push(neighbor);
+        }
+      }
+    }
+
+    if (disabled.length > 0) {
+      this.disabledPositions.update((current) => [...current, ...disabled]);
+    }
+  }
+
+  private getAllSurroundingPositions(
+    pos: Position,
+    alphaNumChars: string[]
+  ): Position[] {
+    const positions: Position[] = [];
+    const letterIndex = alphaNumChars.indexOf(pos.letter);
+
+    for (let dL = -1; dL <= 1; dL++) {
+      for (let dN = -1; dN <= 1; dN++) {
+        if (dL === 0 && dN === 0) continue;
+
+        const newLIndex = letterIndex + dL;
+        const newNumber = pos.number + dN;
+
+        if (
+          newLIndex >= 0 &&
+          newLIndex < alphaNumChars.length &&
+          newNumber >= 1 &&
+          newNumber <= 10
+        ) {
+          positions.push({
+            letter: alphaNumChars[newLIndex],
+            number: newNumber,
+          });
+        }
+      }
     }
 
     return positions;
@@ -340,6 +413,11 @@ export class GameComponent implements OnInit, OnDestroy {
 
     this.opponentHitPositions.set(opponentHitPositions);
     this.opponentShotPositions.set(data.opponentShots);
+
+    this.addSurroundingToDisabled();
+    this.lastOpponentShot.set(
+      data.opponentShots[data.opponentShots.length - 1]
+    );
   }
 
   private getOpponentHitPositions(

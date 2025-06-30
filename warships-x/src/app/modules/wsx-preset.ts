@@ -18,7 +18,7 @@ export const WsxPreset = definePreset(Lara, {
         600: `{${secondaryColor}.600}`,
         700: `{${secondaryColor}.700}`,
         800: `{${secondaryColor}.800}`,
-        850: `#1c1c1e`,
+        850: `#161619`,
         900: `{${secondaryColor}.900}`,
         950: `{${secondaryColor}.950}`,
       },
