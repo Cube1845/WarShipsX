@@ -7,6 +7,19 @@
     display: flex;
     flex-direction: column;
 
+    .left-bar {
+        flex: 1;
+        background-color: var(--p-primary-800);
+    }
+
+    .right-bar {
+        flex: 1;
+    }
+
+    .content {
+        flex: 9;
+    }
+
     .game-container {
         flex-direction: column;
 
@@ -50,6 +63,10 @@
 
     h3 {
         color: var(--p-primary-50);
+    }
+
+    h4 {
+        color: var(--p-surface-300);
     }
 
     input {
