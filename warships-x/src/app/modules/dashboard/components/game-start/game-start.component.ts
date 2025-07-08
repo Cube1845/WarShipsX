@@ -15,6 +15,7 @@ import { ToastService } from '../../../common/services/toast.service';
 import { LobbyService } from '../../services/lobby.service';
 import { Router } from '@angular/router';
 import { AuthDataService } from '../../../auth/services/auth-data.service';
+import { RandomShipsSetupService } from '../../services/random-ships-setup.service';
 
 @Component({
   selector: 'app-game-start',
@@ -24,7 +25,7 @@ import { AuthDataService } from '../../../auth/services/auth-data.service';
 })
 export class GameStartComponent implements OnInit, OnDestroy {
   private readonly settingShipsService = inject(SettingShipsService);
-  private readonly toastService = inject(ToastService);
+  private readonly randomShipsSetupService = inject(RandomShipsSetupService);
   private readonly lobbyService = inject(LobbyService);
   private readonly router = inject(Router);
   private readonly authDataService = inject(AuthDataService);
@@ -120,6 +121,15 @@ export class GameStartComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.lobbyService.disconnect();
+  }
+
+  setupShipsRandomly(): void {
+    this.randomShipsSetupService.randomlySetupShips(
+      this.settingShipsService.fourShip,
+      this.settingShipsService.threeShips(),
+      this.settingShipsService.twoShips(),
+      this.settingShipsService.oneShips()
+    );
   }
 
   logOut(): void {

@@ -87,6 +87,7 @@ export class GameComponent implements OnInit, OnDestroy {
       this.userTurn.set(true);
 
       this.lastOpponentShot.set(position);
+      this.dialogService.closeDialog();
     });
 
     this.gameService.shotFeedback$.subscribe((shot) => {
@@ -115,6 +116,7 @@ export class GameComponent implements OnInit, OnDestroy {
       }
 
       this.userTurn.set(false);
+      this.dialogService.closeDialog();
     });
 
     this.gameService.gameEnded$.subscribe((winnerShips) => {

@@ -29,6 +29,9 @@
         <div class="flex flex-column m-0 p-0 justify-content-end align-items-end h-full">
             <ws-button label="Clear" [outlined]="true" (click)="clearShips()" color="secondary"/>
         </div>
+        <div class="flex flex-column m-0 p-0 justify-content-end align-items-end h-full">
+            <ws-button label="Random" [outlined]="true" (click)="setupShipsRandomly()" color="secondary"/>
+        </div>
     </div>
 
     <battlefield-board (onTileClick)="fieldClick($event)" [highlightedPositions]="allShips()" [hoverable]="editState()" [disabledPositions]="forbiddenFields()"/>
