@@ -3,28 +3,41 @@
     <div class="w-full flex justify-content-center align-items-center"><h3 class="m-0 p-0 py-2 text-3xl">{{ userTurn() ? 'Your turn' : `Opponent's turn` }}</h3></div>
     <div class="flex justify-content-end filling"><ws-button icon="pi pi-sign-out" label="Leave" color="secondary" class="pr-1" (click)="abandonGame()" /></div>
 </div>
-<div class="w-full h-full flex justify-content-center flex-column align-items-center">
-    <div class="w-full flex justify-content-center gap-5 game-container">
-        <div class="flex flex-column align-items-center justify-content-center m-0 p-0">
-            <h1 [class]="'m-0 p-0 line-height-1 mb-2 text-3xl ' + (!userTurn() ? ' current-turn ' : ' ')">You</h1>
-            <battlefield-board 
-                [secondlyHighlightedPositions]="userShips()"
-                [highlightedPositions]="opponentHitPositions()"
-                [xPositions]="opponentShotPositions()"
-            />
-        </div>
-
-        <div class="flex flex-column align-items-center justify-content-center m-0 p-0">
-            <h1 [class]="'m-0 p-0 line-height-1 mb-2 text-3xl ' + (userTurn() ? ' current-turn ' : ' ')">Opponent</h1>
-            <battlefield-board
-                (onTileClick)="fieldClicked($event)"
-                [hoverable]="userTurn()"
-                [selectedPosition]="currentSelectedTile()"
-                [highlightedPositions]="hitPositions().concat(sunkPositions())"
-                [secondlyHighlightedPositions]="missedPositions()"
-                [xPositions]="sunkPositions()"
-            />
-        </div>
+<div class="w-full h-full flex">
+    <div class="left-bar flex align-items-center flex-column">
+        <h3 class="text-sm m-0 p-0 my-3 mx-2">Ships sunk:</h3>
+        <h4 class="text-sm m-0 p-0 my-2">1: {{ opponentOneShipsSunkCount() }}/4</h4>
+        <h4 class="text-sm m-0 p-0 my-2">2: {{ opponentTwoShipsSunkCount() }}/3</h4>
+        <h4 class="text-sm m-0 p-0 my-2">3: {{ opponentThreeShipsSunkCount() }}/2</h4>
+        <h4 class="text-sm m-0 p-0 my-2">4: {{ opponentFourShipsSunkCount() }}/1</h4>
     </div>
-    <p class="info m-0 p-0 mt-2"><i class="info pi pi-info-circle m-0 p-0 line-height-2 pr-1"></i>Click on the opponent's board to shoot</p>
+    <div class="w-full h-full flex justify-content-center flex-column align-items-center content">
+        <div class="w-full flex justify-content-center gap-5 game-container">
+            <div class="flex flex-column align-items-center justify-content-center m-0 p-0">
+                <h1 [class]="'m-0 p-0 line-height-1 mb-2 text-3xl ' + (!userTurn() ? ' current-turn ' : ' ')">You</h1>
+                <battlefield-board 
+                    [secondlyHighlightedPositions]="userShips()"
+                    [highlightedPositions]="opponentHitPositions()"
+                    [xPositions]="opponentShotPositions()"
+                    [selectedPosition]="lastOpponentShot()"
+                />
+            </div>
+
+            <div class="flex flex-column align-items-center justify-content-center m-0 p-0">
+                <h1 [class]="'m-0 p-0 line-height-1 mb-2 text-3xl ' + (userTurn() ? ' current-turn ' : ' ')">Opponent</h1>
+                <battlefield-board
+                    (onTileClick)="fieldClicked($event)"
+                    [hoverable]="userTurn()"
+                    [selectedPosition]="currentSelectedTile()"
+                    [highlightedPositions]="hitPositions().concat(sunkPositions())"
+                    [secondlyHighlightedPositions]="missedPositions()"
+                    [xPositions]="sunkPositions()"
+                    [disabledPositions]="disabledPositions()"
+                />
+            </div>
+        </div>
+        <p class="info m-0 p-0 mt-2"><i class="info pi pi-info-circle m-0 p-0 line-height-2 pr-1"></i>Click on the opponent's board to shoot</p>
+    </div>
+    <div class="right-bar">
+    </div>
 </div>

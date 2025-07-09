@@ -26,6 +26,8 @@ export class BattlefieldBoardComponent {
   secondlyHighlightedPositions = input<Position[]>([]);
   xPositions = input<Position[]>([]);
 
+  disabledPositions = input<Position[]>([]);
+
   selectedPosition = input<Position>();
 
   positionsInclude(inputArray: InputSignal<Position[]>, pos: Position) {

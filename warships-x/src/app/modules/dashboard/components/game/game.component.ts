@@ -32,10 +32,19 @@ export class GameComponent implements OnInit, OnDestroy {
   hitPositions = signal<Position[]>([]);
   missedPositions = signal<Position[]>([]);
 
+  disabledPositions = signal<Position[]>([]);
+
   userShips = signal<Position[]>([]);
 
   opponentShotPositions = signal<Position[]>([]);
   opponentHitPositions = signal<Position[]>([]);
+
+  lastOpponentShot = signal<Position | undefined>(undefined);
+
+  opponentOneShipsSunkCount = signal<number>(0);
+  opponentTwoShipsSunkCount = signal<number>(0);
+  opponentThreeShipsSunkCount = signal<number>(0);
+  opponentFourShipsSunkCount = signal<number>(0);
 
   userTurn = signal<boolean>(false);
 
@@ -76,6 +85,9 @@ export class GameComponent implements OnInit, OnDestroy {
       ]);
 
       this.userTurn.set(true);
+
+      this.lastOpponentShot.set(position);
+      this.dialogService.closeDialog();
     });
 
     this.gameService.shotFeedback$.subscribe((shot) => {
@@ -104,6 +116,7 @@ export class GameComponent implements OnInit, OnDestroy {
       }
 
       this.userTurn.set(false);
+      this.dialogService.closeDialog();
     });
 
     this.gameService.gameEnded$.subscribe((winnerShips) => {
@@ -242,7 +255,6 @@ export class GameComponent implements OnInit, OnDestroy {
   private addPositionsToSunk(sunkPosition: Position): void {
     const sunkPositions: Position[] = [];
     const hitPositions = this.hitPositions();
-    const alphaNumChars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
     const stack: Position[] = [sunkPosition];
 
@@ -259,7 +271,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
       sunkPositions.push(current);
 
-      const neighbors = this.getAdjacentPositions(current, alphaNumChars);
+      const neighbors = this.getAdjacentPositions(current);
 
       for (const neighbor of neighbors) {
         const isAlreadySunk = sunkPositions.some(
@@ -276,13 +288,28 @@ export class GameComponent implements OnInit, OnDestroy {
       }
     }
 
+    switch (sunkPositions.length) {
+      case 1:
+        this.opponentOneShipsSunkCount.update((x) => x + 1);
+        break;
+      case 2:
+        this.opponentTwoShipsSunkCount.update((x) => x + 1);
+        break;
+      case 3:
+        this.opponentThreeShipsSunkCount.update((x) => x + 1);
+        break;
+      case 4:
+        this.opponentFourShipsSunkCount.update((x) => x + 1);
+        break;
+    }
+
     this.sunkPositions.update((current) => [...current, ...sunkPositions]);
+
+    this.addSurroundingToDisabled();
   }
 
-  private getAdjacentPositions(
-    pos: Position,
-    alphaNumChars: string[]
-  ): Position[] {
+  private getAdjacentPositions(pos: Position): Position[] {
+    const alphaNumChars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
     const positions: Position[] = [];
     const letterIndex = alphaNumChars.indexOf(pos.letter);
 
@@ -303,6 +330,68 @@ export class GameComponent implements OnInit, OnDestroy {
     }
     if (pos.number < 10) {
       positions.push({ letter: pos.letter, number: pos.number + 1 });
+    }
+
+    return positions;
+  }
+
+  private addSurroundingToDisabled(): void {
+    const disabled: Position[] = [];
+
+    for (const pos of this.sunkPositions()) {
+      const neighbors = this.getAllSurroundingPositions(pos);
+
+      for (const neighbor of neighbors) {
+        const isAlreadyHitSunkOrMissed =
+          this.hitPositions().some(
+            (p) => p.letter === neighbor.letter && p.number === neighbor.number
+          ) ||
+          this.sunkPositions().some(
+            (p) => p.letter === neighbor.letter && p.number === neighbor.number
+          ) ||
+          this.missedPositions().some(
+            (p) => p.letter === neighbor.letter && p.number === neighbor.number
+          );
+
+        const isAlreadyDisabled = this.disabledPositions().some(
+          (p) => p.letter === neighbor.letter && p.number === neighbor.number
+        );
+
+        if (!isAlreadyHitSunkOrMissed && !isAlreadyDisabled) {
+          disabled.push(neighbor);
+        }
+      }
+    }
+
+    if (disabled.length > 0) {
+      this.disabledPositions.update((current) => [...current, ...disabled]);
+    }
+  }
+
+  private getAllSurroundingPositions(pos: Position): Position[] {
+    const alphaNumChars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    const positions: Position[] = [];
+    const letterIndex = alphaNumChars.indexOf(pos.letter);
+
+    for (let dL = -1; dL <= 1; dL++) {
+      for (let dN = -1; dN <= 1; dN++) {
+        if (dL === 0 && dN === 0) continue;
+
+        const newLIndex = letterIndex + dL;
+        const newNumber = pos.number + dN;
+
+        if (
+          newLIndex >= 0 &&
+          newLIndex < alphaNumChars.length &&
+          newNumber >= 1 &&
+          newNumber <= 10
+        ) {
+          positions.push({
+            letter: alphaNumChars[newLIndex],
+            number: newNumber,
+          });
+        }
+      }
     }
 
     return positions;
@@ -340,6 +429,71 @@ export class GameComponent implements OnInit, OnDestroy {
 
     this.opponentHitPositions.set(opponentHitPositions);
     this.opponentShotPositions.set(data.opponentShots);
+
+    this.addSurroundingToDisabled();
+    this.lastOpponentShot.set(
+      data.opponentShots[data.opponentShots.length - 1]
+    );
+
+    this.setOpponentSunkenShipsCounts(sunkPositions);
+  }
+
+  private findConnectedShip(
+    start: Position,
+    remaining: Set<string>
+  ): Position[] {
+    const queue: Position[] = [start];
+    const ship: Position[] = [];
+
+    while (queue.length > 0) {
+      const current = queue.pop()!;
+      const key = `${current.letter}${current.number}`;
+      if (!remaining.has(key)) continue;
+
+      remaining.delete(key);
+      ship.push(current);
+
+      const neighbors = this.getAdjacentPositions(current);
+      for (const neighbor of neighbors) {
+        const neighborKey = `${neighbor.letter}${neighbor.number}`;
+        if (remaining.has(neighborKey)) {
+          queue.push(neighbor);
+        }
+      }
+    }
+
+    return ship;
+  }
+
+  public setOpponentSunkenShipsCounts(positions: Position[]): void {
+    const remaining = new Set(positions.map((p) => `${p.letter}${p.number}`));
+
+    while (remaining.size > 0) {
+      const [firstKey] = remaining;
+
+      const start = {
+        letter: firstKey[0],
+        number: parseInt(firstKey.slice(1), 10),
+      };
+
+      const ship = this.findConnectedShip(start, remaining);
+      const size = ship.length;
+
+      switch (size) {
+        case 1:
+          this.opponentOneShipsSunkCount.update((x) => x + 1);
+          break;
+        case 2:
+          this.opponentTwoShipsSunkCount.update((x) => x + 1);
+          break;
+        case 3:
+          this.opponentThreeShipsSunkCount.update((x) => x + 1);
+          break;
+        case 4:
+          this.opponentFourShipsSunkCount.update((x) => x + 1);
+          break;
+      }
+    }
   }
 
   private getOpponentHitPositions(

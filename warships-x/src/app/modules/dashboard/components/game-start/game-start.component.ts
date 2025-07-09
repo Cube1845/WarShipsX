@@ -15,6 +15,7 @@ import { ToastService } from '../../../common/services/toast.service';
 import { LobbyService } from '../../services/lobby.service';
 import { Router } from '@angular/router';
 import { AuthDataService } from '../../../auth/services/auth-data.service';
+import { RandomShipsSetupService } from '../../services/random-ships-setup.service';
 
 @Component({
   selector: 'app-game-start',
@@ -24,7 +25,7 @@ import { AuthDataService } from '../../../auth/services/auth-data.service';
 })
 export class GameStartComponent implements OnInit, OnDestroy {
   private readonly settingShipsService = inject(SettingShipsService);
-  private readonly toastService = inject(ToastService);
+  private readonly randomShipsSetupService = inject(RandomShipsSetupService);
   private readonly lobbyService = inject(LobbyService);
   private readonly router = inject(Router);
   private readonly authDataService = inject(AuthDataService);
@@ -55,26 +56,43 @@ export class GameStartComponent implements OnInit, OnDestroy {
   ]);
 
   fourShipCount = computed(() =>
-    this.settingShipsService.fourShip().length > 0 ? 1 : 0
+    this.settingShipsService.fourShip().length == 4 ? 1 : 0
   );
 
   threeShipsCount = computed(
     () =>
-      this.settingShipsService.threeShips().filter((ship) => ship().length > 0)
+      this.settingShipsService.threeShips().filter((ship) => ship().length == 3)
         .length
   );
 
   twoShipsCount = computed(
     () =>
-      this.settingShipsService.twoShips().filter((ship) => ship().length > 0)
+      this.settingShipsService.twoShips().filter((ship) => ship().length == 2)
         .length
   );
 
   oneShipsCount = computed(
     () =>
-      this.settingShipsService.oneShips().filter((ship) => ship().length > 0)
+      this.settingShipsService.oneShips().filter((ship) => ship().length == 1)
         .length
   );
+
+  areAllShipsSet = computed(() => {
+    const fourShipSet = this.settingShipsService.fourShip().length == 4;
+    const threeShipsSet =
+      this.settingShipsService.threeShips().length == 2 &&
+      this.settingShipsService.threeShips().every((x) => x().length == 3);
+    const twoShipsSet =
+      this.settingShipsService.twoShips().length == 3 &&
+      this.settingShipsService.twoShips().every((x) => x().length == 2);
+    const oneShipsSet =
+      this.settingShipsService.oneShips().length == 4 &&
+      this.settingShipsService.oneShips().every((x) => x().length == 1);
+
+    return fourShipSet && threeShipsSet && twoShipsSet && oneShipsSet;
+  });
+
+  forbiddenFields = this.settingShipsService.forbiddenFields;
 
   constructor() {
     this.lobbyService.playersCountChanged$.subscribe((playersCount) =>
@@ -103,6 +121,15 @@ export class GameStartComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.lobbyService.disconnect();
+  }
+
+  setupShipsRandomly(): void {
+    this.randomShipsSetupService.randomlySetupShips(
+      this.settingShipsService.fourShip,
+      this.settingShipsService.threeShips(),
+      this.settingShipsService.twoShips(),
+      this.settingShipsService.oneShips()
+    );
   }
 
   logOut(): void {
@@ -183,11 +210,6 @@ export class GameStartComponent implements OnInit, OnDestroy {
   }
 
   joinQueue(): void {
-    if (!this.settingShipsService.areAllShipsSet()) {
-      this.toastService.error('You have to set your ships first');
-      return;
-    }
-
     const ships: Position[][] = [
       this.settingShipsService.fourShip(),
       this.settingShipsService.threeShips()[0](),
